@@ -10,6 +10,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
@@ -32,14 +33,19 @@ public class ContactResource {
 	}
 	
 	// GET /contacts
+	// GET /contacts?q=querystr
+	
 	@GET 
 	@Path("/")
 	@Produces( MediaType.APPLICATION_XML )
-	public Response listAllContact() {
-//		return "This is contact [id=" + id + "]\n";
+	public Response listAllContact2( @QueryParam("q") String queryString ) {
+		
+		if ( queryString == null) {
+			queryString = "no query params";
+		}
+		
 		Contact contact = ContactFactory.getInstance().createContact("mapfap", "Sarun Wongtanakarn", "admin@mapfap.com", "000000000");
-
-		Contact contact2 = ContactFactory.getInstance().createContact("aatrox", "Aatrox", "aatrox@mapfap.com", "11111111");
+		Contact contact2 = ContactFactory.getInstance().createContact(queryString, "Aatrox", "aatrox@mapfap.com", "11111111");
 
 		List<Contact> x = new ArrayList<Contact>();
 		x.add(contact);
@@ -60,16 +66,6 @@ public class ContactResource {
 
 		return Response.ok(contact).build();
 	}
-	
-//	// GET /contacts/?q=
-//	@GET 
-//	@Path("{q}")
-//	@Produces(MediaType.TEXT_PLAIN)
-//	public String searchContact( @PathParam String q ) {
-//		return "This is contact [id=" + id + "]\n";
-//	}
-
-	
 	
 	/**
 	 * 
