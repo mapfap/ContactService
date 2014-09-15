@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -24,66 +26,91 @@ import jersey.repackaged.com.google.common.collect.Lists;
 
 @Path("/contacts")
 public class ContactResource {
-	
+
 	@Context
 	UriInfo uriInfo;
-	
+
 	public ContactResource() {
-		
+
 	}
-	
+
 	// GET /contacts
 	// GET /contacts?q=querystr
-	
+
 	@GET 
 	@Path("/")
 	@Produces( MediaType.APPLICATION_XML )
-	public Response listAllContact2( @QueryParam("q") String queryString ) {
-		
+	public Response listAllContact( @QueryParam("q") String queryString ) {
+
 		if ( queryString == null) {
 			queryString = "no query params";
 		}
-		
+
 		Contact contact = ContactFactory.getInstance().createContact("mapfap", "Sarun Wongtanakarn", "admin@mapfap.com", "000000000");
 		Contact contact2 = ContactFactory.getInstance().createContact(queryString, "Aatrox", "aatrox@mapfap.com", "11111111");
 
 		List<Contact> x = new ArrayList<Contact>();
 		x.add(contact);
 		x.add(contact2);
-		
+
 		GenericEntity<List<Contact>> contacts = new GenericEntity<List<Contact>>(Lists.newArrayList(x)) {};
-		
+
 		return Response.ok(contacts).build();
 	}
 
 	// GET /contacts/{id}
 	@GET 
-	@Path("{id}")
+	@Path("/{id}")
 	@Produces( MediaType.APPLICATION_XML )
 	public Response getContact( @PathParam("id") long id ) {
-//		return "This is contact [id=" + id + "]\n";
+		//		return "This is contact [id=" + id + "]\n";
 		Contact contact = ContactFactory.getInstance().createContact("mapfap", "Sarun Wongtanakarn", "admin@mapfap.com", "000000000");
 
 		return Response.ok(contact).build();
 	}
 	
-	/**
-	 * 
-	 * @param id id derived from path parameter
-	 * @param reader body of the request
-	 */
-	@PUT
-	@Path("{id}")
-	public void updateContact( @PathParam("id") String id, Reader reader ) {
+	// POST /contacts
+	@POST 
+	@Path("/")
+	@Produces( MediaType.APPLICATION_XML )
+	public Response createContact( Reader reader ) {
 		BufferedReader buff = new BufferedReader(reader);
+		String body = null;
 		try {
-			String body = buff.readLine().trim();
-			
-			System.out.printf( "Got %s is %s\n", id, body );
+			body  = buff.readLine().trim();
+			System.out.println(body);
 		} catch (IOException | NullPointerException ioe) {
-			//return Response.serverError().build();
+			return Response.serverError().build();
 		} finally {
-			try { buff.close(); } catch ( IOException e ) { /* ignore */ }
+			try { buff.close(); } catch (IOException e) { /* ignore */ }
 		}
+		return Response.ok( ContactFactory.getInstance().createContact(body, "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
+	}
+
+	// PUT /contacts/{id}
+	@PUT 
+	@Path("/{id}")
+	@Produces( MediaType.APPLICATION_XML )
+	public Response updateContact( Reader reader ) {
+		BufferedReader buff = new BufferedReader(reader);
+		String body = null;
+		try {
+			body  = buff.readLine().trim();
+			System.out.println(body);
+		} catch (IOException | NullPointerException ioe) {
+			return Response.serverError().build();
+		} finally {
+			try { buff.close(); } catch (IOException e) { /* ignore */ }
+		}
+		return Response.ok( ContactFactory.getInstance().createContact(body, "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
+	}
+
+	// DELETE /contacts/{id}
+	@DELETE
+	@Path("/{id}")
+	@Produces( MediaType.APPLICATION_XML )
+	public Response deleteContact( Reader reader ) {
+		return Response.ok( ContactFactory.getInstance().createContact("del", "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
+		
 	}
 }
