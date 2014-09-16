@@ -6,6 +6,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -60,7 +61,7 @@ public class ContactResource {
 
 	// GET /contacts/{id}
 	@GET 
-	@Path("/{id}")
+	@Path("{id}")
 	@Produces( MediaType.APPLICATION_XML )
 	public Response getContact( @PathParam("id") long id ) {
 		//		return "This is contact [id=" + id + "]\n";
@@ -73,41 +74,26 @@ public class ContactResource {
 	@POST 
 	@Path("/")
 	@Produces( MediaType.APPLICATION_XML )
-	public Response createContact( Reader reader ) {
-		BufferedReader buff = new BufferedReader(reader);
-		String body = null;
-		try {
-			body  = buff.readLine().trim();
-			System.out.println(body);
-		} catch (IOException | NullPointerException ioe) {
-			return Response.serverError().build();
-		} finally {
-			try { buff.close(); } catch (IOException e) { /* ignore */ }
-		}
-		return Response.ok( ContactFactory.getInstance().createContact(body, "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
+	public Response createContact( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
+		
+		
+		
+		return Response.ok( ContactFactory.getInstance().createContact(name, title, "aatrox@mapfap.com", "11111111") ).build();
 	}
 
 	// PUT /contacts/{id}
 	@PUT 
-	@Path("/{id}")
+	@Path("{id}")
 	@Produces( MediaType.APPLICATION_XML )
-	public Response updateContact( Reader reader ) {
-		BufferedReader buff = new BufferedReader(reader);
-		String body = null;
-		try {
-			body  = buff.readLine().trim();
-			System.out.println(body);
-		} catch (IOException | NullPointerException ioe) {
-			return Response.serverError().build();
-		} finally {
-			try { buff.close(); } catch (IOException e) { /* ignore */ }
-		}
-		return Response.ok( ContactFactory.getInstance().createContact(body, "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
+	public Response updateContact( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
+		
+		return Response.ok( ContactFactory.getInstance().createContact(name, title, "aatrox@mapfap.com", "11111111") ).build();
+		
 	}
 
 	// DELETE /contacts/{id}
 	@DELETE
-	@Path("/{id}")
+	@Path("{id}")
 	@Produces( MediaType.APPLICATION_XML )
 	public Response deleteContact( Reader reader ) {
 		return Response.ok( ContactFactory.getInstance().createContact("del", "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
