@@ -1,4 +1,6 @@
 package contact.resource;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.inject.Singleton;
@@ -37,6 +39,8 @@ import contact.service.DaoFactory;
 @Path("/contacts")
 public class ContactResource {
 
+	private static final Response NOT_FOUND_RESPOND = Response.status( Response.Status.NOT_FOUND ).build();;
+
 	@Context
 	UriInfo uriInfo;
 
@@ -46,6 +50,15 @@ public class ContactResource {
 	public ContactResource() {
 		contactFactory = ContactFactory.getInstance();
 		contactDao = DaoFactory.getInstance().getContactDao();
+	}
+	
+	/**
+	 * Check whether ID is not existed in DAO.
+	 * @param id of contact to be checked.
+	 * @return true if ID is not existed; false otherwise.
+	 */
+	private boolean idNotExisted( long id ) {
+		return contactDao.find( id ) == null;
 	}
 
 	/**
@@ -81,12 +94,12 @@ public class ContactResource {
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getContact( @PathParam("id") long id ) {
-		if ( contactDao.find( id ) == null ) {
-			return Response.status( Response.Status.NOT_FOUND ).build();
+		if ( idNotExisted( id ) ) {
+			return NOT_FOUND_RESPOND;
 		}
 		return Response.ok( contactDao.find(id) ).build();
 	}
-
+	
 	/**
 	 * Create new contact with given XML data.
 	 * Request: POST /contacts (XML)
@@ -100,8 +113,20 @@ public class ContactResource {
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
 		Contact contact = contactFactory.createContact( element.getValue() );
+		
+		// ID already existed.
+		if ( ! idNotExisted( contact.getId() ) ) {
+			return Response.status( Response.Status.CONFLICT ).build();
+		}
+			
 		contactDao.save( contact );
-		return Response.ok( contact ).header( "Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
+		URI location = null;
+		try {
+			location = new URI( uriInfo.getAbsolutePath() + "/" + contact.getId() );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return Response.created( location ).build();
 	}
 
 	/**
@@ -120,7 +145,13 @@ public class ContactResource {
 	public Response createContactWithForm( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
 		Contact contact = contactFactory.createContact( title, name, email, phoneNumber );
 		contactDao.save( contact );
-		return Response.ok( contact ).header( "Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
+		URI location = null;
+		try {
+			location = new URI( uriInfo.getAbsolutePath() + "/" + contact.getId() );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return Response.created( location ).build();	
 	}
 
 	/**
@@ -135,10 +166,13 @@ public class ContactResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response updateContact( @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+		if ( idNotExisted( id ) ) {
+			return NOT_FOUND_RESPOND;
+		}
 		Contact contact = element.getValue();
 		contact.setId( id );
 		contactDao.update( contact );
-		return Response.ok( contact ).build();
+		return Response.ok().build();
 	}
 
 	/**
@@ -155,17 +189,23 @@ public class ContactResource {
 	@Consumes({ "application/x-www-form-urlencoded" })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response updateContact( @PathParam("id") long id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
+		if ( idNotExisted( id ) ) {
+			return NOT_FOUND_RESPOND;
+		}
 		Contact contact = new Contact( id, title, name, email, phoneNumber );
 		contactDao.update( contact );
-		return Response.ok( contact ).build();
+		return Response.ok().build();
 	}
 
 	/**
 	 * Delete the contact with given ID.
+	 * Request: DELETE /contacts/{id}
+	 * 
+	 * NOTE: DELETE is idempotent, no need to check ID existed. 
+	 * 
 	 * @param id specifies ID of contact to be deleted.
 	 * @return HTTP response 200 if success.
 	 */
-	// DELETE /contacts/{id}
 	@DELETE
 	@Path("{id}")
 	public Response deleteContact( @PathParam("id") long id ) {
