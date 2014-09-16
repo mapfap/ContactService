@@ -16,10 +16,12 @@ public class ContactFactory {
 	
 	private static ContactFactory instance = null;
 	
-	private static AtomicLong nextId = new AtomicLong(1000L);
+	private AtomicLong nextId;
 	
 	private ContactFactory() {
 		// singleton
+		nextId = new AtomicLong( 1000L );
+		System.out.println("CONTACT FOCTORY CREATED");
 	}
 	
 	public static ContactFactory getInstance() {
@@ -37,8 +39,20 @@ public class ContactFactory {
 	 * @param phoneNumber contact's telephone number.
 	 * @return the contact the created.
 	 */
-	public Contact createContact(String title, String name, String email, String phoneNumber ) {
+	public Contact createContact( String title, String name, String email, String phoneNumber ) {
 		return new Contact( getUniqueId(), title, name, email, phoneNumber );
+	}
+	/**
+	 * Create a contact with existed contact.
+	 * This will re-assign ID if its ID is 0 (not assigned yet). 
+	 * @param contact
+	 * @return
+	 */
+	public Contact createContact( Contact contact ) {
+		if ( contact.getId() == 0 ) {			
+			contact.setId( ContactFactory.getInstance().getUniqueId() );
+		}
+		return contact;
 	}
 	
 	/**
@@ -46,15 +60,7 @@ public class ContactFactory {
 	 * @return unique id not in persistent storage
 	 */
 	private synchronized long getUniqueId() {
-		long id = nextId.getAndAdd( 1L );
-		while( id < Long.MAX_VALUE ) {	
-			
-			// TODO: IT'S COUPLING !!!
-			if ( DaoFactory.getInstance().getContactDao().find( id ) == null ) {
-				return id;
-			}
-			id = nextId.getAndAdd(1L);
-		}
-		return id; // this should never happen
+		return nextId.getAndAdd( 1L );
 	}
+
 }

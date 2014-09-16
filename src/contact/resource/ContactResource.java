@@ -1,10 +1,8 @@
 package contact.resource;
 import java.util.List;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
 
+import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -19,14 +17,19 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBElement;
 
-import contact.entity.Contact;
-import contact.service.ContactFactory;
 import jersey.repackaged.com.google.common.collect.Lists;
+import contact.entity.Contact;
+import contact.service.ContactDao;
+import contact.service.ContactFactory;
+import contact.service.DaoFactory;
 
-
+@Singleton
 @Path("/contacts")
 public class ContactResource {
+
+	ContactDao contactDao = DaoFactory.getInstance().getContactDao();
 
 	@Context
 	UriInfo uriInfo;
@@ -37,24 +40,20 @@ public class ContactResource {
 
 	// GET /contacts
 	// GET /contacts?q=querystr
-
 	@GET 
 	@Path("/")
-	@Produces( MediaType.APPLICATION_XML )
+	@Produces({ MediaType.APPLICATION_XML })
 	public Response listAllContact( @QueryParam("q") String queryString ) {
 
+		List<Contact> tempContactList = null;
+
 		if ( queryString == null) {
-			queryString = "no query params";
+			tempContactList = contactDao.findAll();
+		} else {
+			tempContactList = contactDao.search(queryString);
 		}
 
-		Contact contact = ContactFactory.getInstance().createContact("mapfap", "Sarun Wongtanakarn", "admin@mapfap.com", "000000000");
-		Contact contact2 = ContactFactory.getInstance().createContact(queryString, "Aatrox", "aatrox@mapfap.com", "11111111");
-
-		List<Contact> x = new ArrayList<Contact>();
-		x.add(contact);
-		x.add(contact2);
-
-		GenericEntity<List<Contact>> contacts = new GenericEntity<List<Contact>>(Lists.newArrayList(x)) {};
+		GenericEntity<List<Contact>> contacts = new GenericEntity<List<Contact>>(Lists.newArrayList(tempContactList)) {};
 
 		return Response.ok(contacts).build();
 	}
@@ -62,41 +61,49 @@ public class ContactResource {
 	// GET /contacts/{id}
 	@GET 
 	@Path("{id}")
-	@Produces( MediaType.APPLICATION_XML )
+	@Produces({ MediaType.APPLICATION_XML })
 	public Response getContact( @PathParam("id") long id ) {
-		//		return "This is contact [id=" + id + "]\n";
-		Contact contact = ContactFactory.getInstance().createContact("mapfap", "Sarun Wongtanakarn", "admin@mapfap.com", "000000000");
-
-		return Response.ok(contact).build();
+		if ( contactDao.find(id) == null ) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		return Response.ok( contactDao.find(id) ).build();
 	}
-	
-	// POST /contacts
+
+	// POST /contacts (XML)
 	@POST 
 	@Path("/")
-	@Produces( MediaType.APPLICATION_XML )
-	public Response createContact( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		
-		
-		
-		return Response.ok( ContactFactory.getInstance().createContact(name, title, "aatrox@mapfap.com", "11111111") ).build();
+	@Consumes({ MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_XML })
+	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+		Contact contact = ContactFactory.getInstance().createContact( element.getValue() );
+		contactDao.save( contact );
+		return Response.ok( contact ).header("Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
+	}
+
+	// POST /contacts (FORM)
+	@POST 
+	@Path("/")
+	@Consumes({ "application/x-www-form-urlencoded" })
+	@Produces({ MediaType.APPLICATION_XML })
+	public Response createContactWithForm( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
+		Contact contact = ContactFactory.getInstance().createContact(title, name, email, phoneNumber);
+		contactDao.save( contact );
+		return Response.ok( contact ).header("Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
 	}
 
 	// PUT /contacts/{id}
 	@PUT 
 	@Path("{id}")
-	@Produces( MediaType.APPLICATION_XML )
+	@Produces({ MediaType.APPLICATION_XML })
 	public Response updateContact( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		
-		return Response.ok( ContactFactory.getInstance().createContact(name, title, "aatrox@mapfap.com", "11111111") ).build();
-		
+		return Response.ok( contactDao.update(ContactFactory.getInstance().createContact( title, name, email, phoneNumber )) ).build();
 	}
 
 	// DELETE /contacts/{id}
 	@DELETE
 	@Path("{id}")
-	@Produces( MediaType.APPLICATION_XML )
-	public Response deleteContact( Reader reader ) {
-		return Response.ok( ContactFactory.getInstance().createContact("del", "Aatrox", "aatrox@mapfap.com", "11111111") ).build();
-		
+	public Response deleteContact( @PathParam("id") long id ) {
+		contactDao.delete( id );
+		return Response.ok().build();
 	}
 }
