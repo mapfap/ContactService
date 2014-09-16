@@ -14,7 +14,7 @@ import contact.entity.Contact;
 /**
  * 
  * Data Access Object of Contact entity.
- * Provide crud operations.
+ * Provide CRUD operations.
  * 
  * @author mapfap - Sarun Wongtanakarn
  *
@@ -30,7 +30,10 @@ public class ContactDao {
 		contacts = new ConcurrentHashMap<Long, Contact>();
 		createTestContacts();
 	}
-
+	
+	/**
+	 * Create several sample contacts.
+	 */
 	private void createTestContacts() {
 		ContactFactory contactFactory = ContactFactory.getInstance();
 		Contact test1 = contactFactory.createContact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
@@ -108,7 +111,7 @@ public class ContactDao {
 	 * @param contacts list of contacts to be sorted.
 	 * @return Sorted list of contacts.
 	 */
-	private List<Contact> sortByContactId(List<Contact> contacts) {
+	private List<Contact> sortByContactId( List<Contact> contacts ) {
 		Collections.sort( contacts );
 		return contacts;
 	}

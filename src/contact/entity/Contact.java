@@ -7,8 +7,18 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * 
+ * Contact represents a person or other contact such as mobile phone or email contacts.
+ * This entity is accept JAXB XML notation to marshal and unmarshal.
+ * It's comparable by its ID.
+ * 
+ * 
+ * @author mapfap - Sarun Wongtanakarn
+ *
+ */
 @XmlRootElement
-@XmlAccessorType (XmlAccessType.FIELD)
+@XmlAccessorType( XmlAccessType.FIELD )
 public class Contact implements Serializable, Comparable<Contact> {
 	
 	private static final long serialVersionUID = 1L;
@@ -24,7 +34,16 @@ public class Contact implements Serializable, Comparable<Contact> {
 		
 	}
 	
-	public Contact(long id, String title, String name, String email, String phoneNumber) {
+	/**
+	 * Create a contact with specified information.
+	 * 
+	 * @param id contact's ID.
+	 * @param title contact's nickname or title.
+	 * @param name contact's full name.
+	 * @param email contact's email address.
+	 * @param phoneNumber contact's telephone number.
+	 */
+	public Contact( long id, String title, String name, String email, String phoneNumber ) {
 		this.id = id;
 		this.title = title;
 		this.name = name;
@@ -74,7 +93,7 @@ public class Contact implements Serializable, Comparable<Contact> {
 	
 	@Override
 	public String toString() {
-		return String.format("[%ld] %s.", id, title);
+		return String.format( "[%ld] %s.", id, title );
 	}
 	
 	/** Two contacts are equal if they have the same id,
@@ -89,8 +108,12 @@ public class Contact implements Serializable, Comparable<Contact> {
 		return contact.getId() == this.getId();
 	}
 
+	/**
+	 * Compare each contact by ID,
+	 * lesser number come first. 
+	 */
 	@Override
-	public int compareTo(Contact o) {
+	public int compareTo( Contact o ) {
 		return (int) ( getId() - o.getId() );
 	}
 

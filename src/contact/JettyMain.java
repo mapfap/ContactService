@@ -7,7 +7,7 @@ import org.glassfish.jersey.server.ServerProperties;
 
 /**
  * 
- * 
+ * RESTful web service using Jetty server on the specified port.
  * 
  * @author mapfap - Sarun Wongtanakarn
  *
@@ -21,10 +21,10 @@ public class JettyMain {
 	 * which dispatches requests to JAX-RS resource objects,
 	 * and start the Jetty server.
 	 * 
-	 * @param args not used
-	 * @throws Exception if Jetty server encounters any problem
+	 * @param args not used.
+	 * @throws Exception if Jetty server encounters any problem.
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main( String[] args ) throws Exception {
 		int port = PORT;
 		Server server = new Server( port );
 		
@@ -34,12 +34,12 @@ public class JettyMain {
 		
 		ServletHolder holder = new ServletHolder( org.glassfish.jersey.servlet.ServletContainer.class );
 		
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.resource");
+		holder.setInitParameter( ServerProperties.PROVIDER_PACKAGES, "contact.resource" );
 		context.addServlet( holder, "/*" );
 		
 		server.setHandler( context );
 		
-		System.out.println("Starting Jetty server on port " + port);
+		System.out.println( "Starting Jetty server on port " + port );
 		server.start();
 		
 		System.out.println("Server started.  Press ENTER to exit.");
