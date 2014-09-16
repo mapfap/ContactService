@@ -1,6 +1,7 @@
 package contact.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,14 +28,13 @@ public class ContactDao {
 
 	public ContactDao() {
 		contacts = new ConcurrentHashMap<Long, Contact>();
-		System.out.println("ContactDao CREATED");
 		createTestContacts();
 	}
 
 	private void createTestContacts() {
 		ContactFactory contactFactory = ContactFactory.getInstance();
-		Contact test1 = contactFactory.createContact("title", "name", "email@mail.com", "1111111111");
-		Contact test2 = contactFactory.createContact("mapfap", "Sarun Wongtanakarn", "mail@mapfap.com", "000000000");
+		Contact test1 = contactFactory.createContact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
+		Contact test2 = contactFactory.createContact( "Map", "Sarun Wongtanakarn", "mail@mapfap.com", "0110000000" );
 		save(test1);
 		save(test2);
 	}
@@ -51,7 +51,7 @@ public class ContactDao {
 				matchContacts.add( contact );
 			}
 		}
-		return matchContacts;
+		return sortByContactId( matchContacts );
 	}
 
 	/**
@@ -68,7 +68,8 @@ public class ContactDao {
 	 * @return the list of all contacts.
 	 */
 	public List<Contact> findAll() {
-		return new ArrayList<Contact>( contacts.values() );
+		List<Contact> list = new ArrayList<Contact>( contacts.values() );
+		return sortByContactId( list );
 	}
 
 	/**
@@ -100,6 +101,16 @@ public class ContactDao {
 
 		contacts.put( contact.getId(), contact );
 		return true;
+	}
+	
+	/**
+	 * Sort the given list of contacts.
+	 * @param contacts list of contacts to be sorted.
+	 * @return Sorted list of contacts.
+	 */
+	private List<Contact> sortByContactId(List<Contact> contacts) {
+		Collections.sort( contacts );
+		return contacts;
 	}
 
 }

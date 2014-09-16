@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
-public class Contact implements Serializable {
+public class Contact implements Serializable, Comparable<Contact> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -87,6 +87,11 @@ public class Contact implements Serializable {
 		}
 		Contact contact = (Contact) other;
 		return contact.getId() == this.getId();
+	}
+
+	@Override
+	public int compareTo(Contact o) {
+		return (int) ( getId() - o.getId() );
 	}
 
 	

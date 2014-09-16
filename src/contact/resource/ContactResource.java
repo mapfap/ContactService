@@ -29,13 +29,16 @@ import contact.service.DaoFactory;
 @Path("/contacts")
 public class ContactResource {
 
-	ContactDao contactDao = DaoFactory.getInstance().getContactDao();
 
 	@Context
 	UriInfo uriInfo;
 
-	public ContactResource() {
+	private ContactFactory contactFactory;
+	private ContactDao contactDao;
 
+	public ContactResource() {
+		contactFactory = ContactFactory.getInstance();
+		contactDao = DaoFactory.getInstance().getContactDao();
 	}
 
 	// GET /contacts
@@ -75,7 +78,7 @@ public class ContactResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
-		Contact contact = ContactFactory.getInstance().createContact( element.getValue() );
+		Contact contact = contactFactory.createContact( element.getValue() );
 		contactDao.save( contact );
 		return Response.ok( contact ).header("Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
 	}
@@ -86,7 +89,7 @@ public class ContactResource {
 	@Consumes({ "application/x-www-form-urlencoded" })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContactWithForm( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		Contact contact = ContactFactory.getInstance().createContact(title, name, email, phoneNumber);
+		Contact contact = contactFactory.createContact(title, name, email, phoneNumber);
 		contactDao.save( contact );
 		return Response.ok( contact ).header("Location", uriInfo.getAbsolutePath() + "/" + contact.getId() ).build();
 	}
@@ -96,7 +99,7 @@ public class ContactResource {
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response updateContact( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		return Response.ok( contactDao.update(ContactFactory.getInstance().createContact( title, name, email, phoneNumber )) ).build();
+		return Response.ok( contactDao.update(contactFactory.createContact( title, name, email, phoneNumber )) ).build();
 	}
 
 	// DELETE /contacts/{id}

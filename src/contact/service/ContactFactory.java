@@ -21,7 +21,6 @@ public class ContactFactory {
 	private ContactFactory() {
 		// singleton
 		nextId = new AtomicLong( 1000L );
-		System.out.println("CONTACT FOCTORY CREATED");
 	}
 	
 	public static ContactFactory getInstance() {
