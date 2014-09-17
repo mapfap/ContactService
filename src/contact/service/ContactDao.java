@@ -50,7 +50,9 @@ public class ContactDao {
 	public List<Contact> search( String searchQuery ) {
 		List<Contact> matchContacts = new ArrayList<Contact>();
 		for ( Contact contact : findAll() ) {
-			if ( contact.getTitle().contains( searchQuery ) ) {
+			if ( contact.getTitle() == null ) {
+				/* Do Nothing, There is no title.*/
+			} else if ( contact.getTitle().contains( searchQuery ) ) {
 				matchContacts.add( contact );
 			}
 		}
