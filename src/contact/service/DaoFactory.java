@@ -1,36 +1,51 @@
 package contact.service;
 
+
 /**
- * Manage instances of DAO used in the app.
- * Easier to change the implementation of ContactDao.
+ * DaoFactory defines methods for obtaining instance of data access objects.
+ * To create DAO you first get an instance of a concrete factory by invoking
+ * <p>
+ * <tt>DaoFactory factory = DaoFactory.getInstance(); </tt>
+ * <p>
+ * Then use the <tt>factory</tt> object to get instances of actual DAO.
+ * This factory is an abstract class.  There are concrete subclasses for
+ * each persistence mechanism.  You can add your own factory by subclassing
+ * this factory.
  * 
- * @author mapfap - Sarun Wongtanakarn
+ * @author jim
  */
-public class DaoFactory {
-	
+public abstract class DaoFactory {
+	// singleton instance of this factory
 	private static DaoFactory factory;
-	private ContactDao daoInstance;
 	
-	private DaoFactory() {
-		daoInstance = new ContactDao();
+	/** this class shouldn't be instantiated, but constructor must be visible to subclasses. */
+	protected DaoFactory() {
+		// nothing to do
 	}
 	
 	/**
-	 * Get the instance of DaoFactory.
-	 * @return instance of DaoFactory.
+	 * Get a singleton instance of the DaoFactory.
+	 * @return instance of a concrete DaoFactory
 	 */
 	public static DaoFactory getInstance() {
-		if ( factory == null ) {
-			factory = new DaoFactory();
-		}
+		if (factory == null) factory = contact.service.jpa.JpaDaoFactory.getInstance();
 		return factory;
 	}
 	
 	/**
-	 * Get the instance of ContactDao.
-	 * @return the instance of ContactDao.
+	 * Get an instance of a data access object for Contact objects.
+	 * Subclasses of the base DaoFactory class must provide a concrete
+	 * instance of this method that returns a ContactDao suitable
+	 * for their persistence framework.
+	 * @return instance of Contact's DAO
 	 */
-	public ContactDao getContactDao() {
-		return daoInstance;
-	}
+	public abstract ContactDao getContactDao();
+	
+	/**
+	 * Shutdown all persistence services.
+	 * This method gives the persistence framework a chance to
+	 * gracefully save data and close databases before the
+	 * application terminates.
+	 */
+	public abstract void shutdown();
 }

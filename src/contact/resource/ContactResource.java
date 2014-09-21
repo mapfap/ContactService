@@ -23,9 +23,9 @@ import javax.xml.bind.JAXBElement;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 import contact.entity.Contact;
-import contact.service.ContactDao;
 import contact.service.ContactFactory;
-import contact.service.DaoFactory;
+import contact.service.mem.MemContactDao;
+import contact.service.mem.MemDaoFactory;
 
 /**
  * 
@@ -45,11 +45,11 @@ public class ContactResource {
 	UriInfo uriInfo;
 
 	private ContactFactory contactFactory;
-	private ContactDao contactDao;
+	private MemContactDao contactDao;
 
 	public ContactResource() {
 		contactFactory = ContactFactory.getInstance();
-		contactDao = DaoFactory.getInstance().getContactDao();
+		contactDao = MemDaoFactory.getInstance().getContactDao();
 	}
 	
 	/**
