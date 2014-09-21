@@ -47,12 +47,13 @@ public class ContactDao {
 	 * @param id ID of contact for finding.
 	 * @return the contact with exactly given ID.
 	 */
-	public List<Contact> search( String searchQuery ) {
+	public List<Contact> findByTitle( String title ) {
+		title = title.toUpperCase();
 		List<Contact> matchContacts = new ArrayList<Contact>();
 		for ( Contact contact : findAll() ) {
 			if ( contact.getTitle() == null ) {
 				/* Do Nothing, There is no title.*/
-			} else if ( contact.getTitle().contains( searchQuery ) ) {
+			} else if ( contact.getTitle().toUpperCase().contains( title ) ) {
 				matchContacts.add( contact );
 			}
 		}

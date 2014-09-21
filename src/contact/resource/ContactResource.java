@@ -70,14 +70,14 @@ public class ContactResource {
 	@GET 
 	@Path("/")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response listAllContact( @QueryParam("q") String queryString ) {
+	public Response listAllContact( @QueryParam("title") String title ) {
 
 		List<Contact> tempContactList = null;
 
-		if ( queryString == null) {
+		if ( title == null) {
 			tempContactList = contactDao.findAll();
 		} else {
-			tempContactList = contactDao.search( queryString );
+			tempContactList = contactDao.findByTitle( title );
 		}
 
 		GenericEntity<List<Contact>> contacts = new GenericEntity<List<Contact>>( Lists.newArrayList(tempContactList) ) {};
