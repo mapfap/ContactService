@@ -109,6 +109,7 @@ public class ContactResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+		System.out.println("CREATE CONTACT");
 		Contact contact = element.getValue();
 		
 		// ID already existed.
