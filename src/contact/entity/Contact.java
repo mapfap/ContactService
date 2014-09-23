@@ -45,6 +45,19 @@ public class Contact implements Serializable, Comparable<Contact> {
 	}
 	
 	/**
+	 * Create a contact without ID.
+	 * So set it to ZERO.
+	 * 
+	 * @param title contact's nickname or title.
+	 * @param name contact's full name.
+	 * @param email contact's email address.
+	 * @param phoneNumber contact's telephone number.
+	 */
+	public Contact( String title, String name, String email, String phoneNumber ) {
+		this( 0, title, name, email, phoneNumber);
+	}
+	
+	/**
 	 * Create a contact with specified information.
 	 * 
 	 * @param id contact's ID.

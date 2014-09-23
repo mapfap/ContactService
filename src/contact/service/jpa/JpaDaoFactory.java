@@ -1,20 +1,38 @@
 package contact.service.jpa;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import contact.service.ContactDao;
 import contact.service.DaoFactory;
 
 /**
- * Manage instances of JPA DAO used in the app.
+ * Manage instances of DAO that use the Java Persistence API (JPA) used in the app.
  * Easier to change the implementation of ContactDao.
  * 
  * @author mapfap - Sarun Wongtanakarn
  */
 public class JpaDaoFactory extends DaoFactory {
 	
+	private static final String PERSISTENCE_UNIT = "contacts";
 	private static JpaDaoFactory factory;
-	private JpaContactDao daoInstance;
+	private ContactDao daoInstance;
+	private final EntityManagerFactory emf;
+	private EntityManager em;
+	private static Logger logger;
+	
+	static {
+		logger = Logger.getLogger(JpaDaoFactory.class.getName());
+	}
 	
 	private JpaDaoFactory() {
-		daoInstance = new JpaContactDao();
+		emf = Persistence.createEntityManagerFactory( PERSISTENCE_UNIT );
+		em = emf.createEntityManager();
+		daoInstance = new JpaContactDao( em );
 	}
 	
 	/**
@@ -32,12 +50,21 @@ public class JpaDaoFactory extends DaoFactory {
 	 * Get the instance of ContactDao.
 	 * @return the instance of ContactDao.
 	 */
-	public JpaContactDao getContactDao() {
+	public ContactDao getContactDao() {
 		return daoInstance;
 	}
 
 	@Override
 	public void shutdown() {
-		
+		try {
+			if ( em != null && em.isOpen() ) {
+				em.close();
+			}
+			if ( emf != null && emf.isOpen() ) {
+				emf.close();
+			}
+		} catch ( IllegalStateException ex ) {
+			logger.log( Level.SEVERE, ex.toString() );
+		}
 	}
 }

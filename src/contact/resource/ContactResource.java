@@ -23,8 +23,8 @@ import javax.xml.bind.JAXBElement;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 import contact.entity.Contact;
-import contact.service.ContactFactory;
-import contact.service.mem.MemContactDao;
+import contact.service.ContactDao;
+import contact.service.jpa.JpaDaoFactory;
 import contact.service.mem.MemDaoFactory;
 
 /**
@@ -44,11 +44,9 @@ public class ContactResource {
 	@Context
 	UriInfo uriInfo;
 
-	private ContactFactory contactFactory;
-	private MemContactDao contactDao;
+	private ContactDao contactDao;
 
 	public ContactResource() {
-		contactFactory = ContactFactory.getInstance();
 		contactDao = MemDaoFactory.getInstance().getContactDao();
 	}
 	
@@ -112,7 +110,7 @@ public class ContactResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
-		Contact contact = contactFactory.createContact( element.getValue() );
+		Contact contact = element.getValue();
 		
 		// ID already existed.
 		if ( ! idNotExisted( contact.getId() ) ) {
@@ -143,7 +141,7 @@ public class ContactResource {
 	@Consumes({ "application/x-www-form-urlencoded" })
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response createContactWithForm( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		Contact contact = contactFactory.createContact( title, name, email, phoneNumber );
+		Contact contact = new Contact( title, name, email, phoneNumber );
 		contactDao.save( contact );
 		URI location = null;
 		try {

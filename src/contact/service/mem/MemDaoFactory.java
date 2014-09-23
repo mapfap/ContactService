@@ -38,7 +38,8 @@ public class MemDaoFactory extends DaoFactory {
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-		
+		int todo;
+		// TODO: Use JAXB to write all your contacts to a file on disk.
+		// Then recreate them the next time a MemFactoryDao and ContactDao are created.
 	}
 }

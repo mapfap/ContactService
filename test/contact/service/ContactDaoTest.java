@@ -16,7 +16,6 @@ import contact.service.mem.MemContactDao;
 public class ContactDaoTest {
 	
 	MemContactDao dao;
-	ContactFactory contactFactory;
 	Contact contact1;
 	Contact contact2;
 	Contact contact3;

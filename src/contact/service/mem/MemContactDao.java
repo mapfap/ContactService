@@ -5,13 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
-import contact.service.ContactFactory;
 
 /**
  * 
@@ -27,8 +27,11 @@ public class MemContactDao implements ContactDao {
 	
 	@Context
 	UriInfo uriInfo;
+	
+	private AtomicLong nextId;
 
 	public MemContactDao() {
+		nextId = new AtomicLong( 1000L );
 		contacts = new ConcurrentHashMap<Long, Contact>();
 		createTestContacts();
 	}
@@ -37,9 +40,8 @@ public class MemContactDao implements ContactDao {
 	 * Create several sample contacts.
 	 */
 	private void createTestContacts() {
-		ContactFactory contactFactory = ContactFactory.getInstance();
-		Contact test1 = contactFactory.createContact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
-		Contact test2 = contactFactory.createContact( "Map", "Sarun Wongtanakarn", "mail@mapfap.com", "0110000000" );
+		Contact test1 = new Contact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
+		Contact test2 = new Contact( "Map", "Sarun Wongtanakarn", "mail@mapfap.com", "0110000000" );
 		save(test1);
 		save(test2);
 	}
@@ -87,6 +89,9 @@ public class MemContactDao implements ContactDao {
 	 * @see ContactDao#save(Contact)
 	 */
 	public boolean save( Contact contact ) {
+		if ( contact.getId() == 0 ) {
+			contact.setId( getUniqueId() );
+		}
 		contacts.put( contact.getId(), contact );
 		return true;
 	}
@@ -111,6 +116,14 @@ public class MemContactDao implements ContactDao {
 	private List<Contact> sortByContactId( List<Contact> contacts ) {
 		Collections.sort( contacts );
 		return contacts;
+	}
+	
+	/**
+	 * Get a unique contact ID.
+	 * @return unique id not in persistent storage
+	 */
+	private synchronized long getUniqueId() {
+		return nextId.getAndAdd( 1L );
 	}
 
 }

@@ -1,17 +1,18 @@
 package contact.service.jpa;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Query;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
-import contact.service.ContactFactory;
 
 /**
  * 
@@ -23,63 +24,57 @@ import contact.service.ContactFactory;
  */
 public class JpaContactDao implements ContactDao {
 
-	private Map<Long, Contact> contacts;
+	private final EntityManager em;
 	
 	@Context
 	UriInfo uriInfo;
 
-	public JpaContactDao() {
-		contacts = new ConcurrentHashMap<Long, Contact>();
-		createTestContacts();
+	/**
+	 * Construct a new JpaContactDao with injected EntityManager for using.
+	 * @param em EntityManager for accessing JPA services.
+	 */
+	public JpaContactDao(EntityManager em) {
+		this.em = em;
+		
+//		Contact test = ContactFactory.getInstance().createContact("1","2","3","4");
+//		save( test );
 	}
 	
-	/**
-	 * Create several sample contacts.
-	 */
-	private void createTestContacts() {
-		ContactFactory contactFactory = ContactFactory.getInstance();
-		Contact test1 = contactFactory.createContact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
-		Contact test2 = contactFactory.createContact( "Map", "Sarun Wongtanakarn", "mail@mapfap.com", "0110000000" );
-		save(test1);
-		save(test2);
-	}
-
 	/**
 	 * @see ContactDao#findByTitle(String)
 	 */
 	public List<Contact> findByTitle( String title ) {
-		title = title.toUpperCase();
-		List<Contact> matchContacts = new ArrayList<Contact>();
-		for ( Contact contact : findAll() ) {
-			if ( contact.getTitle() == null ) {
-				/* Do Nothing, There is no title.*/
-			} else if ( contact.getTitle().toUpperCase().contains( title ) ) {
-				matchContacts.add( contact );
-			}
-		}
-		return sortByContactId( matchContacts );
+		Query query = em.createQuery("SELECT c FROM Contact c WHERE LOWER(c.title) LIKE :title");
+		query.setParameter( "title", "%" + title.toLowerCase() + "%" );
+		List<Contact> contacts = query.getResultList();
+		return Collections.unmodifiableList( contacts );
 	}
 
 	/**
 	 * @see ContactDao#find(long)
 	 */
 	public Contact find( long id ) {
-		return contacts.get( id );
+		return em.find(Contact.class, id);
 	}
 
 	/**
 	 * @see ContactDao#findAll()
 	 */
 	public List<Contact> findAll() {
-		List<Contact> list = new ArrayList<Contact>( contacts.values() );
-		return sortByContactId( list );
+		Query query = em.createQuery("SELECT c FROM Contact c");
+		List<Contact> contacts = query.getResultList();
+		return Collections.unmodifiableList( contacts );
 	}
 
 	/**
 	 * @see ContactDao#delete(long)
 	 */
 	public boolean delete( long id ) {
-		contacts.remove( id );
+		Contact contact = find( id );
+		
+		em.getTransaction().begin();
+		em.remove( contact ); // delete entity
+		em.getTransaction().commit();
 		return true;
 	}
 
@@ -87,30 +82,34 @@ public class JpaContactDao implements ContactDao {
 	 * @see ContactDao#save(Contact)
 	 */
 	public boolean save( Contact contact ) {
-		contacts.put( contact.getId(), contact );
-		return true;
+		if ( contact == null ) {
+			throw new IllegalArgumentException("Can't save a null contact");
+		}
+		EntityTransaction tx = em.getTransaction();
+		try {
+			tx.begin();
+			em.persist( contact );
+			tx.commit();
+			return true;
+		} catch ( EntityExistsException ex ) {
+			Logger.getLogger( this.getClass().getName() ).warning( ex.getMessage() );
+			if ( tx.isActive() ) {
+				try { 
+					tx.rollback();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return false;
+		}
 	}
 
 	/**
 	 * @see ContactDao#update(Contact)
 	 */
 	public boolean update( Contact contact ) {
-		if ( ! contacts.containsKey( contact.getId() ) ) {
-			return false;
-		}
-
-		contacts.put( contact.getId(), contact );
-		return true;
-	}
-	
-	/**
-	 * Sort the given list of contacts.
-	 * @param contacts list of contacts to be sorted.
-	 * @return Sorted list of contacts.
-	 */
-	private List<Contact> sortByContactId( List<Contact> contacts ) {
-		Collections.sort( contacts );
-		return contacts;
+		int todo;
+		return false;
 	}
 
 }

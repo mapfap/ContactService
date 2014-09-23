@@ -20,6 +20,7 @@ public abstract class DaoFactory {
 	
 	/** this class shouldn't be instantiated, but constructor must be visible to subclasses. */
 	protected DaoFactory() {
+		int todo;
 		// nothing to do
 	}
 	
@@ -28,7 +29,9 @@ public abstract class DaoFactory {
 	 * @return instance of a concrete DaoFactory
 	 */
 	public static DaoFactory getInstance() {
-		if (factory == null) factory = contact.service.jpa.JpaDaoFactory.getInstance();
+		if ( factory == null ) {
+			factory = contact.service.jpa.JpaDaoFactory.getInstance();
+		}
 		return factory;
 	}
 	
