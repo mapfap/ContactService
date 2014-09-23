@@ -116,7 +116,7 @@ public class Contact implements Serializable, Comparable<Contact> {
 	
 	@Override
 	public String toString() {
-		return String.format( "[%ld] %s.", id, title );
+		return id  + ": " + title;
 	}
 	
 	/** Two contacts are equal if they have the same id,

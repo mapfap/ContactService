@@ -27,16 +27,15 @@ import org.junit.Test;
 
 import contact.JettyMain;
 import contact.entity.Contact;
-import contact.service.mem.Contacts;
-import contact.service.mem.MemContactDao;
+import contact.entity.Contacts;
 
 public class ContactDaoTest {
 
 	private static final int TEST_PORT = 28080;
 	private static URI uri;
-	Contact contact1;
-	Contact contact2;
-	Contact contact3;
+	private static Contact contact1;
+	private static Contact contact2;
+	private static Contact contact3;
 	private ContactDao contactDao = DaoFactory.getInstance().getContactDao();
 	private HttpClient client;
 
@@ -65,7 +64,7 @@ public class ContactDaoTest {
 	}
 	
 	@BeforeClass
-	public void doFirst( ) {
+	public static void doFirst( ) {
 		uri = JettyMain.startServer( TEST_PORT );
 		
 		contact1 = new Contact( "contact1", "Joe Contact", "joe@microsoft.com", "0123456789" );
@@ -74,19 +73,32 @@ public class ContactDaoTest {
 	}
 
 	@AfterClass
-	public void doLast( ) {
+	public static void doLast( ) {
 		JettyMain.stopServer();
 	}
 
 	private List<Contact> convertBytesToContactList( byte[] bs ) {
 		InputStream bodyStream = new ByteArrayInputStream( bs );
-
 		try {
 			Contacts contacts = new Contacts();
 			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
 			Unmarshaller unmarshaller = context.createUnmarshaller();	
 			contacts = (Contacts) unmarshaller.unmarshal( bodyStream );
 			return contacts.getContacts();
+		} catch ( JAXBException e ) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private Contact convertBytesToContact( byte[] bs ) {
+		InputStream bodyStream = new ByteArrayInputStream( bs );
+		try {
+			Contact contact = new Contact();
+			JAXBContext context = JAXBContext.newInstance( Contact.class ) ;
+			Unmarshaller unmarshaller = context.createUnmarshaller();	
+			contact = (Contact) unmarshaller.unmarshal( bodyStream );
+			return contact;
 		} catch ( JAXBException e ) {
 			e.printStackTrace();
 		}
@@ -127,12 +139,11 @@ public class ContactDaoTest {
 			ContentResponse get = client.GET( uri + "contacts/" + id);
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), get.getStatus() );
 
-			List<Contact> contacts = convertBytesToContactList( get.getContent() );
-			assertEquals( "Should be the same title", contact1.getTitle(), contacts.get(0).getTitle() );
-			assertEquals( "Should be the same name", contact1.getName(), contacts.get(0).getName() );
-			assertEquals( "Should be the same email", contact1.getEmail(), contacts.get(0).getEmail() );
-			assertEquals( "Should be the same telephone", contact1.getPhoneNumber(), contacts.get(0).getPhoneNumber() );
-			assertEquals( "Should return empty list", contacts.size(), 1 );
+			Contact contact = convertBytesToContact( get.getContent() );
+			assertEquals( "Should be the same title", contact1.getTitle(), contact.getTitle() );
+			assertEquals( "Should be the same name", contact1.getName(), contact.getName() );
+			assertEquals( "Should be the same email", contact1.getEmail(), contact.getEmail() );
+			assertEquals( "Should be the same telephone", contact1.getPhoneNumber(), contact.getPhoneNumber() );
 
 
 		} catch (Exception e) {
@@ -182,15 +193,25 @@ public class ContactDaoTest {
 
 	@Test
 	public void testSuccessDelete() {
-
 		try {
-			Request request = client.newRequest( uri + "contacts" ).method( HttpMethod.DELETE );
+			long id = 75423543;
+			Request request = client.newRequest( uri + "contacts/" + id ).method( HttpMethod.DELETE );
 			ContentResponse response = request.send();
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
 		} catch ( Exception e ) {
 			e.printStackTrace();
 		}
+	}
 
+	@Test
+	public void testFailDelete() {
+		try {
+			Request request = client.newRequest( uri + "contacts" ).method( HttpMethod.DELETE );
+			ContentResponse response = request.send();
+			assertEquals( "Delete without specify ID, Should return 405 METHOD NOT ALLOWED", Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus() );
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -198,8 +219,9 @@ public class ContactDaoTest {
 		try {
 			ContentResponse response = client.GET( uri + "contacts" );
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
-			Contacts contacts = (Contacts) convertBytesToContactList( response.getContent() );
-			assertEquals( "Should return empty list", 0, contacts.getContacts().size() );
+			List<Contact> contacts = convertBytesToContactList( response.getContent() );
+			System.out.println(contacts.get(0));
+			assertEquals( "Should return empty list", 0, contacts.size() );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

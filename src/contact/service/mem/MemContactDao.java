@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import contact.entity.Contact;
+import contact.entity.Contacts;
 import contact.service.ContactDao;
 
 /**
@@ -154,7 +155,6 @@ public class MemContactDao implements ContactDao {
 	 */
 	@Override
 	public void removeAll() {
-		System.out.println("Remove All (MEM)");
 		for ( Contact contact : findAll() ) {
 			delete( contact.getId() );
 		}
