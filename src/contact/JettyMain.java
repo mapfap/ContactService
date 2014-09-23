@@ -1,6 +1,7 @@
 package contact;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -27,6 +28,7 @@ public class JettyMain {
 	 */
 	public static void main( String[] args ) {
 		startServer( PORT );
+		waitForExit();
 	}
 
 	/**
@@ -36,7 +38,7 @@ public class JettyMain {
 	 * 
 	 * @param port running port of server.
 	 */
-	public static void startServer( int port ) {
+	public static Server startServer( int port ) {
 		try {
 			server = new Server( port );
 	
@@ -53,10 +55,11 @@ public class JettyMain {
 	
 			System.out.println( "Starting Jetty server on port " + port );
 			server.start();
-			waitForExit();
+			return server;
 		} catch( Exception ex ) {
 			ex.printStackTrace();
 		}
+		return null;
 
 	}
 	

@@ -145,5 +145,14 @@ public class MemContactDao implements ContactDao {
 	private synchronized long getUniqueId() {
 		return nextId.getAndAdd( 1L );
 	}
+	
+	/**
+	 * Clear all data in the memory.
+	 */
+	public void clearAll() {
+		for ( Contact contact : findAll() ) {
+			delete( contact.getId() );
+		}
+	}
 
 }

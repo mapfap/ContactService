@@ -1,10 +1,18 @@
 package contact.service;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -12,11 +20,13 @@ import org.junit.Test;
 
 import contact.JettyMain;
 import contact.entity.Contact;
+import contact.service.mem.Contacts;
 import contact.service.mem.MemContactDao;
 
 public class ContactDaoTest {
 
 	private static final int TEST_PORT = 28080;
+	private static Server server;
 	MemContactDao dao;
 	Contact contact1;
 	Contact contact2;
@@ -25,22 +35,41 @@ public class ContactDaoTest {
 
 	@BeforeClass
 	public static void doFirst( ) {
-		JettyMain.startServer( TEST_PORT );
+		server = JettyMain.startServer( TEST_PORT );
 	}
 
 	@AfterClass
 	public static void doLast( ) {
 		JettyMain.stopServer();
 	}
-
+	
+	private List<Contact> convertBytesToContactList( byte[] bs ) {
+		InputStream bodyStream = new ByteArrayInputStream( bs );
+		
+		try {
+			Contacts contacts = new Contacts();
+			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
+			Unmarshaller unmarshaller = context.createUnmarshaller();	
+			contacts = (Contacts) unmarshaller.unmarshal( bodyStream );
+			return contacts.getContacts();
+		} catch ( JAXBException e ) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	@Test
 	public void testGet() {
 		HttpClient httpClient = new HttpClient();
-
 		try {
 			httpClient.start();
-			ContentResponse get = httpClient.GET( "http://localhost:" + TEST_PORT + "/contacts");
-			System.out.println(get.getContentAsString());
+			System.out.println( server.getURI() );
+			ContentResponse get = httpClient.GET("http://localhost:" + TEST_PORT + "/contacts");
+			assertEquals( "Should return 200 OK", get.getStatus() + "", "200" );
+			
+//			List<Contact> contacts = convertBytesToContactList( get.getContent() );
+//			assertEquals( "Should return empty list", contacts.size(), 0 );
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
