@@ -33,7 +33,7 @@ public class MemContactDao implements ContactDao {
 	public MemContactDao() {
 		nextId = new AtomicLong( 1000L );
 		contacts = new ConcurrentHashMap<Long, Contact>();
-		createTestContacts();
+//		createTestContacts();
 	}
 	
 	/**

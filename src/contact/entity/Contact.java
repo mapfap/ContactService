@@ -33,7 +33,7 @@ public class Contact implements Serializable, Comparable<Contact> {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@XmlAttribute
 	private long id;
-	
+
 	@XmlElement(required=true,nillable=false)
 	private String title;
 	private String name;

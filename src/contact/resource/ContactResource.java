@@ -25,7 +25,6 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import contact.entity.Contact;
 import contact.service.ContactDao;
 import contact.service.jpa.JpaDaoFactory;
-import contact.service.mem.MemDaoFactory;
 
 /**
  * 
@@ -47,7 +46,7 @@ public class ContactResource {
 	private ContactDao contactDao;
 
 	public ContactResource() {
-		contactDao = MemDaoFactory.getInstance().getContactDao();
+		contactDao = JpaDaoFactory.getInstance().getContactDao();
 	}
 	
 	/**
@@ -168,6 +167,12 @@ public class ContactResource {
 			return NOT_FOUND_RESPOND;
 		}
 		Contact contact = element.getValue();
+		
+		// If should respond with BAD_REQUEST if there's also ID in the xml data.
+		if ( ! (contact.getId() + "").equals("")) {
+			return Response.status( Response.Status.BAD_REQUEST ).build();
+		}
+		
 		contact.setId( id );
 		contactDao.update( contact );
 		return Response.ok().build();
@@ -210,4 +215,5 @@ public class ContactResource {
 		contactDao.delete( id );
 		return Response.ok().build();
 	}
+	
 }
