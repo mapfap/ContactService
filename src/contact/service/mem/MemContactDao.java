@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import contact.entity.Contact;
