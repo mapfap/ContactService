@@ -35,9 +35,6 @@ public class JpaContactDao implements ContactDao {
 	 */
 	public JpaContactDao(EntityManager em) {
 		this.em = em;
-		
-//		Contact test = ContactFactory.getInstance().createContact("1","2","3","4");
-//		save( test );
 	}
 	
 	/**
@@ -71,9 +68,8 @@ public class JpaContactDao implements ContactDao {
 	 */
 	public boolean delete( long id ) {
 		Contact contact = find( id );
-		
 		em.getTransaction().begin();
-		em.remove( contact ); // delete entity
+		em.remove( contact );
 		em.getTransaction().commit();
 		return true;
 	}
@@ -108,8 +104,22 @@ public class JpaContactDao implements ContactDao {
 	 * @see ContactDao#update(Contact)
 	 */
 	public boolean update( Contact contact ) {
-		int todo;
-		return false;
+		EntityTransaction tx = em.getTransaction();
+		tx.begin();
+		em.find( Contact.class, contact.getId() );
+		em.merge( contact );
+		tx.commit();
+		return true;
+	}
+
+	/**
+	 * @see contact.service.ContactDao#removeAll()
+	 */
+	@Override
+	public void removeAll() {
+		for ( Contact contact : findAll() ) {
+			delete( contact.getId() );
+		}
 	}
 
 }

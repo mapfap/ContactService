@@ -52,5 +52,10 @@ public interface ContactDao {
 	 * @return true if success.
 	 */
 	public boolean update( Contact update );
+	
+	/**
+	 * Remove all contacts from the database.
+	 */
+	public void removeAll();
 
 }

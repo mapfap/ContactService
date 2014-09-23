@@ -42,18 +42,21 @@ public class MemContactDao implements ContactDao {
 	}
 	
 	private void loadContacts() {
-		try {
-			Contacts importContacts = new Contacts();
-			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
-			File inputFile = new File( MemDaoFactory.EXTERNAL_FILE_PATH );
-			Unmarshaller unmarshaller = context.createUnmarshaller();	
-			importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
-			for ( Contact contact : importContacts.getContacts() ) {
-				contacts.put( contact.getId(), contact );
-			}
-		} catch ( JAXBException e ) {
-			e.printStackTrace();
-		}
+		
+//		try {
+//			Contacts importContacts = new Contacts();
+//			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
+//			File inputFile = new File( MemDaoFactory.EXTERNAL_FILE_PATH );
+//			Unmarshaller unmarshaller = context.createUnmarshaller();	
+//			importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
+//			
+//			for ( Contact contact : importContacts.getContacts() ) {
+//				contacts.put( contact.getId(), contact );
+//			}
+//		} catch ( Exception e ) {
+//			System.out.println("trace MemCD");
+////			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -147,9 +150,10 @@ public class MemContactDao implements ContactDao {
 	}
 	
 	/**
-	 * Clear all data in the memory.
+	 * @see ContactDao#removeAll()
 	 */
-	public void clearAll() {
+	@Override
+	public void removeAll() {
 		for ( Contact contact : findAll() ) {
 			delete( contact.getId() );
 		}

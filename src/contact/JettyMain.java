@@ -38,7 +38,7 @@ public class JettyMain {
 	 * 
 	 * @param port running port of server.
 	 */
-	public static Server startServer( int port ) {
+	public static URI startServer( int port ) {
 		try {
 			server = new Server( port );
 	
@@ -55,7 +55,7 @@ public class JettyMain {
 	
 			System.out.println( "Starting Jetty server on port " + port );
 			server.start();
-			return server;
+			return server.getURI();
 		} catch( Exception ex ) {
 			ex.printStackTrace();
 		}
