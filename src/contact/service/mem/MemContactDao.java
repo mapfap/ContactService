@@ -1,5 +1,6 @@
 package contact.service.mem;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
@@ -33,9 +37,25 @@ public class MemContactDao implements ContactDao {
 	public MemContactDao() {
 		nextId = new AtomicLong( 1000L );
 		contacts = new ConcurrentHashMap<Long, Contact>();
+		loadContacts();
 //		createTestContacts();
 	}
 	
+	private void loadContacts() {
+		try {
+			Contacts importContacts = new Contacts();
+			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
+			File inputFile = new File( MemDaoFactory.EXTERNAL_FILE_PATH );
+			Unmarshaller unmarshaller = context.createUnmarshaller();	
+			importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
+			for ( Contact contact : importContacts.getContacts() ) {
+				contacts.put( contact.getId(), contact );
+			}
+		} catch ( JAXBException e ) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Create several sample contacts.
 	 */

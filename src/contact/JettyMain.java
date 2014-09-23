@@ -7,6 +7,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 
+import contact.service.mem.MemDaoFactory;
+
 /**
  * 
  * RESTful web service using Jetty server on the specified port.
@@ -51,6 +53,7 @@ public class JettyMain {
 	
 			System.out.println( "Starting Jetty server on port " + port );
 			server.start();
+			waitForExit();
 		} catch( Exception ex ) {
 			ex.printStackTrace();
 		}
@@ -70,6 +73,7 @@ public class JettyMain {
 
 	public static void stopServer() {
 		try {
+			MemDaoFactory.getInstance().shutdown();
 			server.stop();
 		} catch (Exception e) {
 			e.printStackTrace();

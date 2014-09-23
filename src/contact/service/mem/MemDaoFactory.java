@@ -1,5 +1,13 @@
 package contact.service.mem;
 
+import java.io.File;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import contact.entity.Contact;
 import contact.service.DaoFactory;
 
 /**
@@ -9,14 +17,15 @@ import contact.service.DaoFactory;
  * @author mapfap - Sarun Wongtanakarn
  */
 public class MemDaoFactory extends DaoFactory {
-	
+
+	public static final String EXTERNAL_FILE_PATH = "/tmp/ContactsSevicePersistence.xml";
 	private static MemDaoFactory factory;
 	private MemContactDao daoInstance;
-	
+
 	private MemDaoFactory() {
 		daoInstance = new MemContactDao();
 	}
-	
+
 	/**
 	 * Get the instance of DaoFactory.
 	 * @return instance of DaoFactory.
@@ -27,7 +36,7 @@ public class MemDaoFactory extends DaoFactory {
 		}
 		return factory;
 	}
-	
+
 	/**
 	 * Get the instance of ContactDao.
 	 * @return the instance of ContactDao.
@@ -38,8 +47,18 @@ public class MemDaoFactory extends DaoFactory {
 
 	@Override
 	public void shutdown() {
-		int todo;
-		// TODO: Use JAXB to write all your contacts to a file on disk.
-		// Then recreate them the next time a MemFactoryDao and ContactDao are created.
+		List<Contact> contacts = daoInstance.findAll();
+		Contacts exportContacts = new Contacts();
+		exportContacts.setContacts( contacts );
+
+		try {
+			JAXBContext context = JAXBContext.newInstance( Contacts.class );
+			File outputFile = new File( EXTERNAL_FILE_PATH );
+			Marshaller marshaller = context.createMarshaller();	
+			marshaller.marshal( exportContacts, outputFile );
+		} catch ( JAXBException e ) {
+			e.printStackTrace();
+		}
 	}
+	
 }
