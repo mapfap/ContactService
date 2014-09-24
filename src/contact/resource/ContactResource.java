@@ -168,8 +168,9 @@ public class ContactResource {
 		}
 		Contact contact = element.getValue();
 		
-		// If should respond with BAD_REQUEST if there's also ID in the xml data.
-		if ( ! (contact.getId() + "").equals("")) {
+		// If should respond with BAD_REQUEST if there's also ID in the xml data
+		// and it's not the same with the path parameter.
+		if ( contact.getId() != 0 && contact.getId() != id ) {
 			return Response.status( Response.Status.BAD_REQUEST ).build();
 		}
 		

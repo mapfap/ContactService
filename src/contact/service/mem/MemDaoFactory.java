@@ -20,7 +20,7 @@ import contact.service.DaoFactory;
  */
 public class MemDaoFactory extends DaoFactory {
 
-	public static final String EXTERNAL_FILE_PATH = "/tmp/ContactsSevicePersistence.xml";
+	public static final String EXTERNAL_FILE_PATH = "ContactsSevicePersistence.xml";
 	private static MemDaoFactory factory;
 	private MemContactDao daoInstance;
 

@@ -76,8 +76,13 @@ public class ContactDaoTest {
 		JettyMain.stopServer();
 	}
 
-	private List<Contact> convertBytesToContactList( byte[] bs ) {
-		InputStream bodyStream = new ByteArrayInputStream( bs );
+	/**
+	 * Convert byte[] of HTTP Response to List of Contact entity. 
+	 * @param byteArray array of byte data recieved from HTTP Response.
+	 * @return List of Contact entity parsed from byteArray.
+	 */
+	private List<Contact> convertBytesToContactList( byte[] byteArray ) {
+		InputStream bodyStream = new ByteArrayInputStream( byteArray );
 		try {
 			Contacts contacts = new Contacts();
 			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
@@ -90,8 +95,13 @@ public class ContactDaoTest {
 		return null;
 	}
 
-	private Contact convertBytesToContact( byte[] bs ) {
-		InputStream bodyStream = new ByteArrayInputStream( bs );
+	/**
+	 * Convert byte[] of HTTP Response to Contact entity. 
+	 * @param byteArray array of byte data recieved from HTTP Response.
+	 * @return Contact entity parsed from byteArray.
+	 */
+	private Contact convertBytesToContact( byte[] byteArray ) {
+		InputStream bodyStream = new ByteArrayInputStream( byteArray );
 		try {
 			Contact contact = new Contact();
 			JAXBContext context = JAXBContext.newInstance( Contact.class ) ;
@@ -104,6 +114,11 @@ public class ContactDaoTest {
 		return null;
 	}
 
+	/**
+	 * Marshal the specified contact to XML String.
+	 * @param contact contact to be parse.
+	 * @return String of XML contact.
+	 */
 	private String marshal( Contact contact ) {
 		StringWriter writer = new StringWriter();
 		try {
@@ -132,10 +147,10 @@ public class ContactDaoTest {
 			String[] splited = location.split("/");
 			String id = splited[ splited.length - 1 ];
 
-			ContentResponse get = client.GET( uri + "contacts/" + id);
-			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), get.getStatus() );
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
 
-			Contact contact = convertBytesToContact( get.getContent() );
+			Contact contact = convertBytesToContact( response.getContent() );
 			assertEquals( "Should be the same title", contact1.getTitle(), contact.getTitle() );
 			assertEquals( "Should be the same name", contact1.getName(), contact.getName() );
 			assertEquals( "Should be the same email", contact1.getEmail(), contact.getEmail() );
@@ -164,7 +179,6 @@ public class ContactDaoTest {
 	@Test
 	public void testSuccessPut() {
 		try {
-			
 			StringContentProvider content = new StringContentProvider( marshal( contact3 ) );	
 			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
 			ContentResponse res = request.send();
@@ -223,11 +237,20 @@ public class ContactDaoTest {
 	@Test
 	public void testSuccessGet() {
 		try {
-			ContentResponse response = client.GET( uri + "contacts" );
+			StringContentProvider content = new StringContentProvider( marshal( contact3 ) );	
+			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
+			ContentResponse res = request.send();
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), res.getStatus() );
+			String location = res.getHeaders().get("Location");
+			String[] splited = location.split("/");
+			String id = splited[ splited.length - 1 ];
+			
+			ContentResponse response = client.GET( uri + "contacts?title=" + contact3.getTitle().charAt( 0 )  );
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+
 			List<Contact> contacts = convertBytesToContactList( response.getContent() );
-			System.out.println( contacts.get(0) );
-			assertEquals( "Should return empty list", 0, contacts.size() );
+			assertEquals( "Should be the same title", contact3.getTitle(), contacts.get( 0 ).getTitle() );
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
