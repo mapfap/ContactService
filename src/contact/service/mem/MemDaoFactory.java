@@ -1,6 +1,7 @@
 package contact.service.mem;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -24,6 +25,7 @@ public class MemDaoFactory extends DaoFactory {
 	private MemContactDao daoInstance;
 
 	private MemDaoFactory() {
+		initFileIfnotExisted();
 		daoInstance = new MemContactDao();
 	}
 
@@ -49,9 +51,13 @@ public class MemDaoFactory extends DaoFactory {
 	@Override
 	public void shutdown() {
 		List<Contact> contacts = daoInstance.findAll();
+		writeContactListToFile( contacts );
+		
+	}
+	
+	public void writeContactListToFile( List<Contact> contacts ) {
 		Contacts exportContacts = new Contacts();
 		exportContacts.setContacts( contacts );
-
 		try {
 			JAXBContext context = JAXBContext.newInstance( Contacts.class );
 			File outputFile = new File( EXTERNAL_FILE_PATH );
@@ -59,6 +65,15 @@ public class MemDaoFactory extends DaoFactory {
 			marshaller.marshal( exportContacts, outputFile );
 		} catch ( JAXBException e ) {
 			e.printStackTrace();
+		}
+	}
+
+	private void initFileIfnotExisted() {
+		File file = new File( EXTERNAL_FILE_PATH );
+		if ( ! file.exists() ) {
+			System.out.println("CREATE NEW FILE");
+			List<Contact> contacts = new ArrayList<Contact>();
+			writeContactListToFile( contacts );
 		}
 	}
 	
