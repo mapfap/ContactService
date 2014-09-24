@@ -14,9 +14,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
@@ -90,11 +93,21 @@ public class ContactResource {
 	@GET 
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response getContact( @PathParam("id") long id ) {
+	public Response getContact( @PathParam("id") long id, @Context Request request ) {
 		if ( idNotExisted( id ) ) {
 			return NOT_FOUND_RESPOND;
 		}
-		return Response.ok( contactDao.find(id) ).build();
+		Contact contact = contactDao.find(id);
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge( 86400 );
+		Response.ResponseBuilder rb = null;
+		EntityTag etag = new EntityTag( contact.hashCode() + "" );
+		rb = request.evaluatePreconditions(etag);
+		if (rb != null) {
+		  return rb.cacheControl(cc).tag(etag).build();
+		}
+		rb = Response.ok(contact).cacheControl(cc).tag(etag);
+		return rb.build();
 	}
 	
 	/**
