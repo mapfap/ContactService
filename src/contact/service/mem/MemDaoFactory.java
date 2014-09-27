@@ -21,23 +21,14 @@ import contact.service.DaoFactory;
 public class MemDaoFactory extends DaoFactory {
 
 	public static final String EXTERNAL_FILE_PATH = "ContactsSevicePersistence.xml";
-	private static MemDaoFactory factory;
 	private MemContactDao daoInstance;
 
-	private MemDaoFactory() {
+	/**
+	 * Suppose to call only once by its abstract factory.
+	 */
+	public MemDaoFactory() {
 		initFileIfnotExisted();
 		daoInstance = new MemContactDao();
-	}
-
-	/**
-	 * Get the instance of DaoFactory.
-	 * @return instance of DaoFactory.
-	 */
-	public static MemDaoFactory getInstance() {
-		if ( factory == null ) {
-			factory = new MemDaoFactory();
-		}
-		return factory;
 	}
 
 	/**

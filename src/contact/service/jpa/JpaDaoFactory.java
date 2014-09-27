@@ -19,7 +19,6 @@ import contact.service.DaoFactory;
 public class JpaDaoFactory extends DaoFactory {
 	
 	private static final String PERSISTENCE_UNIT = "contacts";
-	private static JpaDaoFactory factory;
 	private ContactDao daoInstance;
 	private final EntityManagerFactory emf;
 	private EntityManager em;
@@ -29,21 +28,13 @@ public class JpaDaoFactory extends DaoFactory {
 		logger = Logger.getLogger(JpaDaoFactory.class.getName());
 	}
 	
-	private JpaDaoFactory() {
+	/**
+	 * Suppose to call only once by its abstract factory.
+	 */
+	public JpaDaoFactory() {
 		emf = Persistence.createEntityManagerFactory( PERSISTENCE_UNIT );
 		em = emf.createEntityManager();
 		daoInstance = new JpaContactDao( em );
-	}
-	
-	/**
-	 * Get the instance of DaoFactory.
-	 * @return instance of DaoFactory.
-	 */
-	public static JpaDaoFactory getInstance() {
-		if ( factory == null ) {
-			factory = new JpaDaoFactory();
-		}
-		return factory;
 	}
 	
 	/**

@@ -29,6 +29,12 @@ import contact.JettyMain;
 import contact.entity.Contact;
 import contact.entity.Contacts;
 
+/**
+ * Test ContactDao, (test upon the interface)
+ * Actually test this service through the HTTP request.
+ * @author mapfap - Sarun Wongtakakarn
+ *
+ */
 public class ContactDaoTest {
 
 	private static final int TEST_PORT = 28080;
@@ -38,31 +44,10 @@ public class ContactDaoTest {
 	private static Contact contact3;
 	private ContactDao contactDao = DaoFactory.getInstance().getContactDao();
 	private HttpClient client;
-
-	@Before
-	public void beforeTest() {
-
-		contactDao.removeAll();
-
-
-		client = new HttpClient();
-		try {
-			client.start();
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
-
-	}
-
-	@After
-	public void afterTest() {
-		try {
-			client.stop();
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
-	}
-
+	
+	/**
+	 * Start the service.
+	 */
 	@BeforeClass
 	public static void doFirst( ) {
 		uri = JettyMain.startServer( TEST_PORT );
@@ -71,9 +56,41 @@ public class ContactDaoTest {
 		contact3 = new Contact( 4455, "contact2", "Sally Contract", "sally@foo.com", "0123456780" );
 	}
 
+	/**
+	 * Stop the service.
+	 */
 	@AfterClass
 	public static void doLast( ) {
 		JettyMain.stopServer();
+	}
+
+	/**
+	 * Clear persistence data and instantiate a new client before every testcases.
+	 * so each test are absolutely independent.
+	 */
+	@Before
+	public void beforeTest() {
+		contactDao.removeAll();
+
+		client = new HttpClient();
+		try {
+			client.start();
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Stop the client,
+	 * help the server load on abundant client connections.
+	 */
+	@After
+	public void afterTest() {
+		try {
+			client.stop();
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -132,6 +149,9 @@ public class ContactDaoTest {
 		return writer.toString();
 	}
 
+	/**
+	 * POST a contact, and then try GET it and check its attributes.
+	 */
 	@Test
 	public void testSuccessPost() {
 		try {
@@ -139,18 +159,18 @@ public class ContactDaoTest {
 			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
 
 			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
-			ContentResponse res = request.send();
+			ContentResponse response = request.send();
 
-			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), res.getStatus() );
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), response.getStatus() );
 
-			String location = res.getHeaders().get("Location");
+			String location = response.getHeaders().get("Location");
 			String[] splited = location.split("/");
 			String id = splited[ splited.length - 1 ];
 
-			ContentResponse response = client.GET( uri + "contacts/" + id);
-			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			ContentResponse response2 = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
 
-			Contact contact = convertBytesToContact( response.getContent() );
+			Contact contact = convertBytesToContact( response2.getContent() );
 			assertEquals( "Should be the same title", contact1.getTitle(), contact.getTitle() );
 			assertEquals( "Should be the same name", contact1.getName(), contact.getName() );
 			assertEquals( "Should be the same email", contact1.getEmail(), contact.getEmail() );
@@ -160,6 +180,9 @@ public class ContactDaoTest {
 		}
 	}
 
+	/**
+	 * POST a contact with specified ID twice, so it should return 409 CONFLICT.
+	 */
 	@Test
 	public void testFailPost() {
 		try {
@@ -176,14 +199,17 @@ public class ContactDaoTest {
 		}
 	}
 
+	/**
+	 * POST a contact, PUT some update, and then GET to check whether attributed are updated correctly.
+	 */
 	@Test
 	public void testSuccessPut() {
 		try {
 			StringContentProvider content = new StringContentProvider( marshal( contact3 ) );	
 			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
-			ContentResponse res = request.send();
-			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), res.getStatus() );
-			String location = res.getHeaders().get("Location");
+			ContentResponse response = request.send();
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), response.getStatus() );
+			String location = response.getHeaders().get("Location");
 			String[] splited = location.split("/");
 			String id = splited[ splited.length - 1 ];
 			
@@ -198,6 +224,9 @@ public class ContactDaoTest {
 		}
 	}
 	
+	/**
+	 * PUT update to non-existing contact's ID.
+	 */
 	@Test
 	public void testFailPut() {
 		try {
@@ -210,45 +239,59 @@ public class ContactDaoTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * DELETE a contact.
+	 */
 	@Test
 	public void testSuccessDelete() {
+		try {
+			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
+			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
+			ContentResponse response = request.send();
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), response.getStatus() );
+			String location = response.getHeaders().get("Location");
+			String[] splited = location.split("/");
+			String id = splited[ splited.length - 1 ];
+			
+			Request request2 = client.newRequest( uri + "contacts/" + id ).method( HttpMethod.DELETE );
+			ContentResponse response2 = request2.send();
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Try to DELETE an non-existing contact's ID.
+	 */
+	@Test
+	public void testFailDelete() {
 		try {
 			long id = 75423543;
 			Request request = client.newRequest( uri + "contacts/" + id ).method( HttpMethod.DELETE );
 			ContentResponse response = request.send();
-			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			assertEquals( "Should return 404 NOT FOUND", Status.NOT_FOUND.getStatusCode(), response.getStatus() );
 		} catch ( Exception e ) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void testFailDelete() {
-		try {
-			Request request = client.newRequest( uri + "contacts" ).method( HttpMethod.DELETE );
-			ContentResponse response = request.send();
-			assertEquals( "Delete without specify ID, Should return 405 METHOD NOT ALLOWED", Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus() );
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
-	}
-
+	/**
+	 * GET a contact, and check its attributes.
+	 */
 	@Test
 	public void testSuccessGet() {
 		try {
 			StringContentProvider content = new StringContentProvider( marshal( contact3 ) );	
 			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
-			ContentResponse res = request.send();
-			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), res.getStatus() );
-			String location = res.getHeaders().get("Location");
-			String[] splited = location.split("/");
-			String id = splited[ splited.length - 1 ];
+			ContentResponse response = request.send();
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), response.getStatus() );
 			
-			ContentResponse response = client.GET( uri + "contacts?title=" + contact3.getTitle().charAt( 0 )  );
-			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			ContentResponse response2 = client.GET( uri + "contacts?title=" + contact3.getTitle().charAt( 0 )  );
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
 
-			List<Contact> contacts = convertBytesToContactList( response.getContent() );
+			List<Contact> contacts = convertBytesToContactList( response2.getContent() );
 			assertEquals( "Should be the same title", contact3.getTitle(), contacts.get( 0 ).getTitle() );
 			
 		} catch (Exception e) {
@@ -256,6 +299,9 @@ public class ContactDaoTest {
 		}
 	}
 
+	/**
+	 * GET non-existing contact's ID.
+	 */
 	@Test
 	public void testFailGet() {
 		try {

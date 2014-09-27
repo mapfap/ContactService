@@ -62,6 +62,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * Create several sample contacts.
 	 */
+	@SuppressWarnings("unused")
 	private void createTestContacts() {
 		Contact test1 = new Contact( "Geeky", "John Doe", "john@mymail.com", "010010010100" );
 		Contact test2 = new Contact( "Map", "Sarun Wongtanakarn", "mail@mapfap.com", "0110000000" );

@@ -55,7 +55,10 @@ public class JettyMain {
 	
 			System.out.println( "Starting Jetty server on port " + port );
 			server.start();
-//			return server.getURI(); // This somehow cause an error with kuwin network.
+			
+			// returning server.getURI() is
+			// somehow cause an error with KUWIN network.
+			
 			return new URI("http://127.0.0.1:" + port + "/");
 		} catch( Exception ex ) {
 			ex.printStackTrace();

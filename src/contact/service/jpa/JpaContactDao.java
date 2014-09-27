@@ -40,6 +40,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#findByTitle(String)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Contact> findByTitle( String title ) {
 		Query query = em.createQuery("SELECT c FROM Contact c WHERE LOWER(c.title) LIKE :title");
 		query.setParameter( "title", "%" + title.toLowerCase() + "%" );
@@ -57,6 +58,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#findAll()
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Contact> findAll() {
 		Query query = em.createQuery("SELECT c FROM Contact c");
 		List<Contact> contacts = query.getResultList();

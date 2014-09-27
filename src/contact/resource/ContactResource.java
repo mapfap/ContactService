@@ -97,16 +97,16 @@ public class ContactResource {
 		if ( idNotExisted( id ) ) {
 			return NOT_FOUND_RESPOND;
 		}
-		Contact contact = contactDao.find(id);
+		Contact contact = contactDao.find( id );
 		CacheControl cc = new CacheControl();
 		cc.setMaxAge( 86400 );
 		Response.ResponseBuilder rb = null;
 		EntityTag etag = new EntityTag( contact.hashCode() + "" );
-		rb = request.evaluatePreconditions(etag);
-		if (rb != null) {
-		  return rb.cacheControl(cc).tag(etag).build();
+		rb = request.evaluatePreconditions( etag );
+		if ( rb != null ) {
+		  return rb.cacheControl( cc ).tag( etag ).build();
 		}
-		rb = Response.ok(contact).cacheControl(cc).tag(etag);
+		rb = Response.ok( contact ).cacheControl( cc ).tag( etag );
 		return rb.build();
 	}
 	
@@ -226,6 +226,12 @@ public class ContactResource {
 	@DELETE
 	@Path("{id}")
 	public Response deleteContact( @PathParam("id") long id ) {
+		
+		// Idempotent is about the effect of the request, not about the response code that you get
+		if ( idNotExisted( id ) ) {
+			return NOT_FOUND_RESPOND;
+		}
+		
 		contactDao.delete( id );
 		return Response.ok().build();
 	}

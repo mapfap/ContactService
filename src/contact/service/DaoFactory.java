@@ -31,7 +31,8 @@ public abstract class DaoFactory {
 	 */
 	public static DaoFactory getInstance() {
 		if ( factory == null ) {
-			factory = contact.service.mem.MemDaoFactory.getInstance();
+			factory = new contact.service.mem.MemDaoFactory();
+			// factory = new contact.service.jpa.JpaDaoFactory();
 		}
 		return factory;
 	}
