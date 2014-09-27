@@ -25,7 +25,7 @@ import contact.service.ContactDao;
 public class JpaContactDao implements ContactDao {
 
 	private final EntityManager em;
-	
+
 	@Context
 	UriInfo uriInfo;
 
@@ -36,7 +36,7 @@ public class JpaContactDao implements ContactDao {
 	public JpaContactDao(EntityManager em) {
 		this.em = em;
 	}
-	
+
 	/**
 	 * @see ContactDao#findByTitle(String)
 	 */
@@ -69,13 +69,18 @@ public class JpaContactDao implements ContactDao {
 	 * @see ContactDao#delete(long)
 	 */
 	public boolean delete( long id ) {
+		EntityTransaction tx = em.getTransaction();
 		Contact contact = find( id );
-		em.getTransaction().begin();
-		em.remove( contact );
-		em.getTransaction().commit();
-		return true;
+		try {
+			tx.begin();
+			em.remove( contact );
+			tx.commit();
+			return true;
+		} catch ( EntityExistsException ex ) {
+			handleDatabaseError( tx, ex );
+			return false;
+		}
 	}
-
 	/**
 	 * @see ContactDao#save(Contact)
 	 */
@@ -90,14 +95,7 @@ public class JpaContactDao implements ContactDao {
 			tx.commit();
 			return true;
 		} catch ( EntityExistsException ex ) {
-			Logger.getLogger( this.getClass().getName() ).warning( ex.getMessage() );
-			if ( tx.isActive() ) {
-				try { 
-					tx.rollback();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			handleDatabaseError( tx, ex );
 			return false;
 		}
 	}
@@ -107,11 +105,16 @@ public class JpaContactDao implements ContactDao {
 	 */
 	public boolean update( Contact contact ) {
 		EntityTransaction tx = em.getTransaction();
-		tx.begin();
-		em.find( Contact.class, contact.getId() );
-		em.merge( contact );
-		tx.commit();
-		return true;
+		try {
+			tx.begin();
+			em.find( Contact.class, contact.getId() );
+			em.merge( contact );
+			tx.commit();
+			return true;
+		} catch ( EntityExistsException ex ) {
+			handleDatabaseError( tx, ex );
+			return false;
+		}
 	}
 
 	/**
@@ -121,6 +124,22 @@ public class JpaContactDao implements ContactDao {
 	public void removeAll() {
 		for ( Contact contact : findAll() ) {
 			delete( contact.getId() );
+		}
+	}
+
+	/**
+	 * Handle error from database, try to rollback it if possible.
+	 * @param tx current EntityTransaction.
+	 * @param ex EntityExistsException that occurs.
+	 */
+	private void handleDatabaseError( EntityTransaction tx, EntityExistsException ex ){
+		Logger.getLogger( this.getClass().getName() ).warning( ex.getMessage() );
+		if ( tx.isActive() ) {
+			try { 
+				tx.rollback();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
