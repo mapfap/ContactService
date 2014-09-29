@@ -25,10 +25,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement(name="contact")
 @XmlAccessorType( XmlAccessType.FIELD )
-public class Contact implements Serializable, Comparable<Contact> {
-	
+public class Contact extends MD5Digestable implements Serializable, Comparable<Contact> {
+
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@XmlAttribute
@@ -39,11 +39,11 @@ public class Contact implements Serializable, Comparable<Contact> {
 	private String name;
 	private String email;
 	private String phoneNumber;
-	
+
 	public Contact() {
-		
+
 	}
-	
+
 	/**
 	 * Create a contact without ID.
 	 * So set it to ZERO.
@@ -56,7 +56,7 @@ public class Contact implements Serializable, Comparable<Contact> {
 	public Contact( String title, String name, String email, String phoneNumber ) {
 		this( 0, title, name, email, phoneNumber);
 	}
-	
+
 	/**
 	 * Create a contact with specified information.
 	 * 
@@ -73,31 +73,31 @@ public class Contact implements Serializable, Comparable<Contact> {
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 	}
-	
+
 	public long getId() {
 		return id;
 	}
-	
+
 	public void setId( long id ) {
 		this.id = id;
 	}
-	
+
 	public String getTitle() {
 		return title;
 	}
-	
+
 	public void setTitle( String title ) {
 		this.title = title;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName( String name ) {
 		this.name = name;
 	}
-	
+
 	public String getEmail() {
 		return email;
 	}
@@ -109,16 +109,16 @@ public class Contact implements Serializable, Comparable<Contact> {
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
-	
+
 	public void setPhoneNumber( String phoneNumber ) {
 		this.phoneNumber = phoneNumber;
 	}
-	
+
 	@Override
 	public String toString() {
 		return id  + ": " + title;
 	}
-	
+
 	/** Two contacts are equal if they have the same id,
 	 * even if other attributes differ.
 	 * @param other another contact to compare to this one.
@@ -140,5 +140,13 @@ public class Contact implements Serializable, Comparable<Contact> {
 		return (int) ( getId() - o.getId() );
 	}
 
-	
+	/**
+	 * @see contact.entity.MD5Digestable#getMD5()
+	 */
+	@Override
+	public String getMD5() {
+		String data = (getId() + getTitle() + getName() + getEmail() + getPhoneNumber());
+		return super.digest( data );
+	}
+
 }

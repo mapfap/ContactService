@@ -17,15 +17,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
-
-import jersey.repackaged.com.google.common.collect.Lists;
 import contact.entity.Contact;
+import contact.entity.Contacts;
 import contact.service.ContactDao;
 import contact.service.mem.MemDaoFactory;
 
@@ -79,8 +77,10 @@ public class ContactResource {
 		} else {
 			tempContactList = contactDao.findByTitle( title );
 		}
-
-		GenericEntity<List<Contact>> contacts = new GenericEntity<List<Contact>>( Lists.newArrayList(tempContactList) ) {};
+		
+		Contacts contacts = new Contacts();
+		contacts.setContacts( tempContactList );
+		
 		return Response.ok( contacts ).build();
 	}
 
@@ -101,7 +101,7 @@ public class ContactResource {
 		CacheControl cc = new CacheControl();
 		cc.setMaxAge( 86400 );
 		Response.ResponseBuilder rb = null;
-		EntityTag etag = new EntityTag( contact.hashCode() + "" );
+		EntityTag etag = new EntityTag( contact.getMD5() );
 		rb = request.evaluatePreconditions( etag );
 		if ( rb != null ) {
 		  return rb.cacheControl( cc ).tag( etag ).build();
