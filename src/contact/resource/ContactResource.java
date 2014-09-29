@@ -80,7 +80,7 @@ public class ContactResource {
 	@GET 
 	@Path("/")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response listAllContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-Non-Match") String ifNonMatch, @QueryParam("title") String title, @Context Request request ) {
+	public Response listAllContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @QueryParam("title") String title, @Context Request request ) {
 
 		List<Contact> tempContactList = null;
 
@@ -97,7 +97,7 @@ public class ContactResource {
 			return NOT_MODIFIED_RESPOND;
 		}
 
-		if ( ifNonMatch == null || ! ifNonMatch.equals( contacts.getMD5() ) ) {
+		if ( ifNoneMatch == null || ! ifNoneMatch.equals( contacts.getMD5() ) ) {
 
 			CacheControl cc = new CacheControl();
 			cc.setMaxAge( -1 );
@@ -123,7 +123,7 @@ public class ContactResource {
 	@GET 
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response getContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-Non-Match") String ifNonMatch, @PathParam("id") long id, @Context Request request ) {
+	public Response getContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, @Context Request request ) {
 		Response response = null;
 
 		response = checkIdNotFound( id );
@@ -137,7 +137,7 @@ public class ContactResource {
 			return NOT_MODIFIED_RESPOND;
 		}
 
-		if ( ifNonMatch == null || ! ifNonMatch.equals( contact.getMD5() ) ) {
+		if ( ifNoneMatch == null || ! ifNoneMatch.equals( contact.getMD5() ) ) {
 			CacheControl cc = new CacheControl();
 			cc.setMaxAge( -1 );
 			EntityTag etag = new EntityTag( contact.getMD5() );
@@ -218,7 +218,7 @@ public class ContactResource {
 	@Path("{id}")
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response updateContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-Non-Match") String ifNonMatch, @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+	public Response updateContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
 		//		System.out.println("." + ifMatch + ".");
 		//		System.out.println("." + ifNonMatch + ".");
 

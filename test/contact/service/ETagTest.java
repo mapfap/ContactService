@@ -118,7 +118,7 @@ public class ETagTest {
 	}
 	
 	@Test
-	public void testGenerateETag() {
+	public void testGeneratedETag() {
 		long id = postContact( contact1 );
 		
 		try {
@@ -126,6 +126,25 @@ public class ETagTest {
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testIfNonMatch() {
+		long id = postContact( contact1 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header("If-None-Match", etag).method( HttpMethod.GET );
+			ContentResponse response2 = request2.send();
+			assertEquals( "Get the old one, should return NOT MODIFIED", Status.NOT_MODIFIED.getStatusCode(), response2.getStatus() );
 			
 		} catch ( Exception ex ) {
 			ex.printStackTrace();
