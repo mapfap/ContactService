@@ -1,6 +1,6 @@
 package contact.entity;
 
-import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
  * @author mapfap - Sarun Wongtanakarn
  */
 public abstract class MD5Digestable {
-	
+
 	/**
 	 * Get MD5 of this object.
 	 * @return MD5 of this object.
@@ -22,17 +22,22 @@ public abstract class MD5Digestable {
 	 * @return String of MD5.
 	 */
 	protected String digest( String data ) {
+		MessageDigest messageDigest;
 		try {
-			byte[] bytesOfMessage = data.toString().getBytes("UTF-8");
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] thedigest = md.digest( bytesOfMessage );
-			String digested = new String( thedigest, "UTF-8" );
-			System.out.println( digested );
-			return digested;
-		} catch ( UnsupportedEncodingException | NoSuchAlgorithmException ex ) {
-			ex.printStackTrace();
+			messageDigest = MessageDigest.getInstance("MD5");
+			messageDigest.reset();
+			messageDigest.update( data.getBytes() );
+			byte[] digest = messageDigest.digest();
+			BigInteger bigInt = new BigInteger( 1,digest );
+			String hashtext = bigInt.toString( 16 );
+			while( hashtext.length() < 32 ){
+				hashtext = "0" + hashtext;
+			}
+			return hashtext;
+		} catch ( NoSuchAlgorithmException e ) {
+			e.printStackTrace();
 		}
 		return null;
 	}
-	
+
 }
