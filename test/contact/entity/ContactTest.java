@@ -20,5 +20,9 @@ public class ContactTest {
 		assertEquals( "Same contact must have same MD5", contact1.getMD5(), contact1.getMD5() );
 		assertEquals( "Two contacts with same data must have same MD5", contact2.getMD5(), contact3.getMD5() );
 		assertFalse( "Two different contacts should not have same MD5", contact1.getMD5().equals( contact2.getMD5() ) );
+		
+		String oldMD5 = contact1.getMD5();
+		contact1.setName("...");
+		assertFalse( "A contact that its value has been changed should have a new MD5", contact1.getMD5().equals( oldMD5 ) );
 	}
 }
