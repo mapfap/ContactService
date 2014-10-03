@@ -101,7 +101,12 @@ public class ETagTest {
 
 		return writer.toString();
 	}
-
+	
+	/**
+	 * Post to save a contact to service.
+	 * @param contact contact to be saved.
+	 * @return ID of contact generated from service.
+	 */
 	private long postContact( Contact contact ) {
 		try {
 			StringContentProvider content = new StringContentProvider( marshal( contact ) );	
@@ -219,8 +224,7 @@ public class ETagTest {
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
 			
-			contact1.setEmail("change@change.com");
-			String fakeETag = "\"" + contact1.getMD5() + "\"";
+			String fakeETag = "\"" + contact2.getMD5() + "\"";
 			
 			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , fakeETag ).method( HttpMethod.GET );
 			ContentResponse response2 = request2.send();
@@ -262,7 +266,7 @@ public class ETagTest {
 			assertTrue("ETag must be existed", etag != null);
 			
 			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
-			String fakeETag = "\"" + contact3.getMD5() + "\"";
+			String fakeETag = "\"" + contact1.getMD5() + "\"";
 			Request request2 = client.newRequest( uri + "contacts/" + id ).content( content, "application/xml" ).header( HttpHeader.IF_MATCH , fakeETag).method( HttpMethod.PUT );
 			ContentResponse response2 = request2.send();
 			assertEquals( "PUT with NOT-matching ETAG, should return 412 PRECONDITION FAILED", Status.PRECONDITION_FAILED.getStatusCode(), response2.getStatus() );
@@ -301,7 +305,7 @@ public class ETagTest {
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
 			
-			String fakeETag = "\"" + contact2.getMD5() + "\"";
+			String fakeETag = "\"" + contact1.getMD5() + "\"";
 			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_MATCH , fakeETag).method( HttpMethod.DELETE );
 			ContentResponse response2 = request2.send();
 			assertEquals( "DELETE with NOT-matching ETAG, should return 412 PRECONDITION FAILED", Status.PRECONDITION_FAILED.getStatusCode(), response2.getStatus() );

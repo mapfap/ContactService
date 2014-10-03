@@ -149,6 +149,11 @@ public class ContactDaoTest {
 		return writer.toString();
 	}
 
+	/**
+	 * Get contact with specified ID.
+	 * @param id ID of contact to find.
+	 * @return contact with specified ID.
+	 */
 	private Contact getContact( long id ) {
 		try {
 			ContentResponse response2 = client.GET( uri + "contacts/" + id);
@@ -161,6 +166,11 @@ public class ContactDaoTest {
 		return null;
 	}
 
+	/**
+	 * Post to save a contact through service.
+	 * @param contact contact to be saved.
+	 * @return ID of contact generated from service.
+	 */
 	private long postContact( Contact contact ) {
 		try {
 			StringContentProvider content = new StringContentProvider( marshal( contact ) );	
@@ -177,6 +187,10 @@ public class ContactDaoTest {
 		return -1;
 	}
 
+	/**
+	 * Put an update through service.
+	 * @param contact contact to be updated.
+	 */
 	private void putContact( Contact contact ) {
 		try {
 			StringContentProvider content = new StringContentProvider( marshal( contact ) );
@@ -188,6 +202,10 @@ public class ContactDaoTest {
 		}
 	}
 
+	/**
+	 * Delete a contact with specified ID.
+	 * @param id ID of contact to be delete.
+	 */
 	private void deleteContact( long id ) {
 		try {
 			Request request = client.newRequest( uri + "contacts/" + id ).method( HttpMethod.DELETE );
