@@ -15,6 +15,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -118,12 +119,48 @@ public class ETagTest {
 	}
 	
 	@Test
-	public void testGeneratedETag() {
+	public void testETagFromGet() {
 		long id = postContact( contact1 );
 		
 		try {
 			ContentResponse response = client.GET( uri + "contacts/" + id);
 			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testETagFromPost() {
+		try {
+			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
+			Request request = client.newRequest( uri + "contacts" ).content( content, "application/xml" ).method( HttpMethod.POST );
+			ContentResponse response = request.send();
+			assertEquals( "Should return 201 CREATED", Status.CREATED.getStatusCode(), response.getStatus() );
+			
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testETagFromPut() {
+		long id = postContact( contact2 );
+		
+		contact2.setName("CHANGED!");
+		
+		try {
+			StringContentProvider content = new StringContentProvider( marshal( contact2 ) );	
+			Request request = client.newRequest( uri + "contacts/" + id ).content( content, "application/xml" ).method( HttpMethod.PUT );
+			ContentResponse response = request.send();
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
 			
@@ -142,7 +179,7 @@ public class ETagTest {
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
 			
-			Request request2 = client.newRequest( uri + "contacts/" + id ).header("If-None-Match", etag).method( HttpMethod.GET );
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , etag).method( HttpMethod.GET );
 			ContentResponse response2 = request2.send();
 			assertEquals( "Get the old one, should return NOT MODIFIED", Status.NOT_MODIFIED.getStatusCode(), response2.getStatus() );
 			

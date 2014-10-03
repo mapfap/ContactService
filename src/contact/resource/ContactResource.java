@@ -24,6 +24,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
+import org.eclipse.jetty.http.HttpHeader;
+
 import contact.entity.Contact;
 import contact.entity.Contacts;
 import contact.service.ContactDao;
@@ -45,6 +47,7 @@ public class ContactResource {
 	private static final Response BAD_REQUEST_RESPOND = Response.status( Response.Status.BAD_REQUEST ).build();
 	private static final Response NOT_MODIFIED_RESPOND = Response.status( Response.Status.NOT_MODIFIED ).build();
 	private static final Response CONFLICT_RESPOND = Response.status( Response.Status.CONFLICT ).build();
+	private static final Response PRECONDITION_FAILED_RESPONSE = Response.status( Response.Status.PRECONDITION_FAILED ).build();
 
 	@Context
 	UriInfo uriInfo;
@@ -56,9 +59,9 @@ public class ContactResource {
 	}
 
 	/**
-	 * Check whether ID is not existed in DAO.
-	 * @param id of contact to be checked.
-	 * @return true if ID is not existed; false otherwise.
+	 * Check if there's an attempt to access non-existing entity.
+	 * @param id of entity to be checked.
+	 * @return appropriate response.
 	 */
 	private Response checkIdNotFound( long id ) {
 		if ( isIdNotExisted( id ) ) {
@@ -67,6 +70,11 @@ public class ContactResource {
 		return null;
 	}
 
+	/**
+	 * Check whether ID is not existed in DAO.
+	 * @param id of contact to be checked.
+	 * @return true if ID is not existed; false otherwise.
+	 */
 	private boolean isIdNotExisted( long id ) {
 		return contactDao.find( id ) == null;
 	}
@@ -82,6 +90,8 @@ public class ContactResource {
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response listAllContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @QueryParam("title") String title, @Context Request request ) {
 
+		Response response = null;
+
 		List<Contact> tempContactList = null;
 
 		if ( title == null) {
@@ -93,25 +103,17 @@ public class ContactResource {
 		Contacts contacts = new Contacts();
 		contacts.setContacts( tempContactList );
 
-		if ( ifMatch != null && ifMatch.equals( contacts.getMD5() ) ) {
-			return NOT_MODIFIED_RESPOND;
+		response = checkPrecondition( ifMatch, ifNoneMatch, contacts.getMD5(), false );
+		if ( response != null ) {
+			return response;
 		}
 
-		if ( ifNoneMatch == null || ! ifNoneMatch.equals( contacts.getMD5() ) ) {
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge( -1 );
+		EntityTag etag = new EntityTag( contacts.getMD5() );
+		
+		return Response.ok( contacts ).cacheControl( cc ).tag( etag ).build();
 
-			CacheControl cc = new CacheControl();
-			cc.setMaxAge( -1 );
-			EntityTag etag = new EntityTag( contacts.getMD5() );
-			Response.ResponseBuilder rb = request.evaluatePreconditions( etag );
-			if ( rb != null ) {
-				// System.out.println("Bad Precondition");
-				return rb.cacheControl( cc ).tag( etag ).build();
-			}
-			return Response.ok( contacts ).cacheControl( cc ).tag( etag ).build();
-		}
-
-		// Never happens.
-		return null;
 	}
 
 	/**
@@ -133,24 +135,19 @@ public class ContactResource {
 
 		Contact contact = contactDao.find( id );
 
-		if ( ifMatch != null && ifMatch.equals( contact.getMD5() ) ) {
-			return NOT_MODIFIED_RESPOND;
+		response = checkPrecondition( ifMatch, ifNoneMatch, contact.getMD5(), false );
+		if ( response != null ) {
+			return response;
 		}
 
-		if ( ifNoneMatch == null || ! ifNoneMatch.equals( contact.getMD5() ) ) {
-			CacheControl cc = new CacheControl();
-			cc.setMaxAge( -1 );
-			EntityTag etag = new EntityTag( contact.getMD5() );
-			Response.ResponseBuilder rb = request.evaluatePreconditions( etag );
-			if ( rb != null ) {
-				return rb.cacheControl( cc ).tag( etag ).build();
-			}
-			return Response.ok( contact ).cacheControl( cc ).tag( etag ).build();
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge( -1 );
+		EntityTag etag = new EntityTag( contact.getMD5() );
+		Response.ResponseBuilder rb = request.evaluatePreconditions( etag );
+		if ( rb != null ) {
+			return rb.cacheControl( cc ).tag( etag ).build();
 		}
-
-		// Never happens.
-		return null;
-
+		return Response.ok( contact ).cacheControl( cc ).tag( etag ).build();
 	}
 
 	/**
@@ -164,7 +161,7 @@ public class ContactResource {
 	@Path("/")
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+	public Response createContact( JAXBElement<Contact> element, @Context UriInfo uriInfo, @Context Request request ) {
 		Contact contact = element.getValue();
 
 		// ID already existed.
@@ -172,39 +169,20 @@ public class ContactResource {
 			return CONFLICT_RESPOND;
 		}
 
+		// After this, contact's ID will be assigned.
 		contactDao.save( contact );
-		URI location = null;
-		try {
-			location = new URI( uriInfo.getAbsolutePath() + "/" + contact.getId() );
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		return Response.created( location ).build();
-	}
 
-	/**
-	 * Create new contact with given form data.
-	 * Request: POST /contacts (FORM)
-	 * @param title contact's nickname or title.
-	 * @param name contact's full name.
-	 * @param email contact's email address.
-	 * @param phoneNumber contact's telephone number.
-	 * @return HTTP response 200 if success.
-	 */
-	@POST 
-	@Path("/")
-	@Consumes({ "application/x-www-form-urlencoded" })
-	@Produces({ MediaType.APPLICATION_XML })
-	public Response createContactWithForm( @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		Contact contact = new Contact( title, name, email, phoneNumber );
-		contactDao.save( contact );
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge( -1 );
+		EntityTag etag = new EntityTag( contact.getMD5() );
+
 		URI location = null;
 		try {
 			location = new URI( uriInfo.getAbsolutePath() + "/" + contact.getId() );
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		return Response.created( location ).build();	
+		return Response.created( location ).cacheControl( cc ).tag( etag ).build();
 	}
 
 	/**
@@ -218,7 +196,7 @@ public class ContactResource {
 	@Path("{id}")
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response updateContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo ) {
+	public Response updateContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo, @Context Request request ) {
 		//		System.out.println("." + ifMatch + ".");
 		//		System.out.println("." + ifNonMatch + ".");
 
@@ -237,32 +215,19 @@ public class ContactResource {
 		}
 
 		contact.setId( id );
-		contactDao.update( contact );
-		return Response.ok().build();
-	}
-
-	/**
-	 * Update the contact with given form data.
-	 * Request: PUT /contacts/{id} (FORM)
-	 * @param title title contact's nickname or title.
-	 * @param name contact's full name.
-	 * @param email contact's email address.
-	 * @param phoneNumber phoneNumber contact's telephone number.
-	 * @return HTTP response 200 if success.
-	 */
-	@PUT 
-	@Path("{id}")
-	@Consumes({ "application/x-www-form-urlencoded" })
-	@Produces({ MediaType.APPLICATION_XML })
-	public Response updateContact( @PathParam("id") long id, @FormParam("title") String title, @FormParam("name") String name, @FormParam("name") String email, @FormParam("name") String phoneNumber ) {
-		Response response = null;
-		response = checkIdNotFound( id );
+		
+		response = checkPrecondition( ifMatch, ifNoneMatch, contact.getMD5(), false );
 		if ( response != null ) {
 			return response;
 		}
-		Contact contact = new Contact( id, title, name, email, phoneNumber );
+		
 		contactDao.update( contact );
-		return Response.ok().build();
+
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge( -1 );
+		EntityTag etag = new EntityTag( contact.getMD5() );
+		
+		return Response.ok().cacheControl( cc ).tag( etag ).build();
 	}
 
 	/**
@@ -276,17 +241,61 @@ public class ContactResource {
 	 */
 	@DELETE
 	@Path("{id}")
-	public Response deleteContact( @PathParam("id") long id ) {
+	public Response deleteContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, @Context Request request ) {
 
-		// Idempotent is about the effect of the request, not about the response code that you get
 		Response response = null;
+		
+		// Idempotent is about the effect of the request, not about the response code that you get
 		response = checkIdNotFound( id );
+		if ( response != null ) {
+			return response;
+		}
+		
+		Contact contact = contactDao.find( id );
+		response = checkPrecondition( ifMatch, ifNoneMatch, contact.getMD5(), false );
 		if ( response != null ) {
 			return response;
 		}
 
 		contactDao.delete( id );
 		return Response.ok().build();
+	}
+	
+	/**
+	 * Return appropriate response, if it's not finished yet then return null.
+	 * @param ifMatch If-Match HTTP header.
+	 * @param ifNoneMatch If-None-Match HTTP header.
+	 * @param etag ETag for checking.
+	 * @param isGetMethod if this method called from GET so, request will change to NOT MODIFIED instead of PRECONDITION FAILED. 
+	 * @return appropriate response.
+	 */
+	private Response checkPrecondition( String ifMatch, String ifNoneMatch, String etag, boolean isGetMethod ) {
+		if ( ifMatch != null && ifNoneMatch != null ) {
+			return BAD_REQUEST_RESPOND;
+		}
+
+		if ( ifMatch != null ) {
+			if ( ifMatch.equals( etag ) ) {				
+				return null;
+			} else {
+				return PRECONDITION_FAILED_RESPONSE;
+			}
+		}
+
+		if ( ifNoneMatch != null ) {
+			if ( ifNoneMatch.equals( etag ) ) {
+				if ( isGetMethod ) {
+					return NOT_MODIFIED_RESPOND;
+				} else {					
+					return PRECONDITION_FAILED_RESPONSE;
+				}
+			} else {
+				return null;
+			}
+		}
+
+		// Both headers are null.
+		return null;
 	}
 
 }
