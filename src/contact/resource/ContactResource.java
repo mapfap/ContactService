@@ -26,7 +26,7 @@ import javax.xml.bind.JAXBElement;
 import contact.entity.Contact;
 import contact.entity.Contacts;
 import contact.service.ContactDao;
-import contact.service.mem.MemDaoFactory;
+import contact.service.DaoFactory;
 
 /**
  * 
@@ -40,9 +40,10 @@ import contact.service.mem.MemDaoFactory;
 @Path("/contacts")
 public class ContactResource {
 
-	private static final Response NOT_FOUND_RESPOND = Response.status( Response.Status.NOT_FOUND ).build();
-	private static final Response BAD_REQUEST_RESPOND = Response.status( Response.Status.BAD_REQUEST ).build();
-	private static final Response CONFLICT_RESPOND = Response.status( Response.Status.CONFLICT ).build();
+	private static final Response NOT_FOUND_RESPONSE = Response.status( Response.Status.NOT_FOUND ).build();
+	private static final Response BAD_REQUEST_RESPONSE = Response.status( Response.Status.BAD_REQUEST ).build();
+	private static final Response CONFLICT_RESPONSE = Response.status( Response.Status.CONFLICT ).build();
+	private static final Response NOT_ACCEPTABLE_RESPONSE = Response.status( Response.Status.NOT_ACCEPTABLE ).build();
 
 	@Context
 	UriInfo uriInfo;
@@ -51,7 +52,7 @@ public class ContactResource {
 	private CacheControl cacheControl;
 
 	public ContactResource() {
-		contactDao = MemDaoFactory.getInstance().getContactDao();
+		contactDao = DaoFactory.getInstance().getContactDao();
 		cacheControl = new CacheControl();
 		cacheControl.setMaxAge( 86400 );
 	}
@@ -63,15 +64,15 @@ public class ContactResource {
 	 */
 	private Response checkIdNotFound( long id ) {
 		if ( isIdNotExisted( id ) ) {
-			return NOT_FOUND_RESPOND;
+			return NOT_FOUND_RESPONSE;
 		}
 		return null;
 	}
 
 	/**
-	 * Check whether ID is not existed in DAO.
+	 * Check whether ID does not existed in DAO.
 	 * @param id of contact to be checked.
-	 * @return true if ID is not existed; false otherwise.
+	 * @return true if ID does not existed; false otherwise.
 	 */
 	private boolean isIdNotExisted( long id ) {
 		return contactDao.find( id ) == null;
@@ -147,7 +148,7 @@ public class ContactResource {
 		Contact contact = element.getValue();
 
 		if ( ! isIdNotExisted( contact.getId() ) ) {
-			return CONFLICT_RESPOND;
+			return CONFLICT_RESPONSE;
 		}
 
 		// After this, contact's ID will be assigned.
@@ -187,7 +188,7 @@ public class ContactResource {
 		// It should response with BAD_REQUEST if there's also ID in the xml data
 		// and it's not the same with the path parameter.
 		if ( contact.getId() != 0 && contact.getId() != id ) {
-			return BAD_REQUEST_RESPOND;
+			return BAD_REQUEST_RESPONSE;
 		}
 
 		contact.setId( id );
@@ -234,8 +235,11 @@ public class ContactResource {
 			return builder.cacheControl( cacheControl ).tag( etag ).build();
 		}
 		
-		contactDao.delete( id );
-		return Response.ok().build();
+		if ( contactDao.delete( id ) ) {			
+			return Response.ok().build();
+		} else {
+			return NOT_ACCEPTABLE_RESPONSE;
+		}
 	}
 	
 }

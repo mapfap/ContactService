@@ -8,8 +8,6 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
@@ -25,9 +23,6 @@ import contact.service.ContactDao;
 public class JpaContactDao implements ContactDao {
 
 	private final EntityManager em;
-
-	@Context
-	UriInfo uriInfo;
 
 	/**
 	 * Construct a new JpaContactDao with injected EntityManager for using.

@@ -12,7 +12,7 @@ package contact.service;
  * each persistence mechanism.  You can add your own factory by subclassing
  * this factory.
  * 
- * @author jim
+ * @author jim, Sarun Wongtanakarn
  */
 public abstract class DaoFactory {
 	// singleton instance of this factory
@@ -35,6 +35,15 @@ public abstract class DaoFactory {
 			// factory = new contact.service.jpa.JpaDaoFactory();
 		}
 		return factory;
+	}
+	
+	/**
+	 * Set DAO factory for.
+	 * So it's able to inject the preferred DaoFactory.
+	 * @param afactory a new factory to be used as concrete factory class.
+	 */
+	public static void setDaoFactory( DaoFactory afactory ) {
+		factory = afactory;
 	}
 	
 	/**
