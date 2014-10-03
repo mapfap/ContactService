@@ -1,4 +1,4 @@
-ContactsService
+ContactService
 ===============
 
 RESTful Contact Web Service.
