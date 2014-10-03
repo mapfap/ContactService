@@ -103,16 +103,20 @@ public class ContactResource {
 		Contacts contacts = new Contacts();
 		contacts.setContacts( tempContactList );
 
-		response = checkPrecondition( ifMatch, ifNoneMatch, contacts.getMD5(), false );
-		if ( response != null ) {
-			return response;
-		}
-
-		CacheControl cc = new CacheControl();
-		cc.setMaxAge( -1 );
-		EntityTag etag = new EntityTag( contacts.getMD5() );
 		
-		return Response.ok( contacts ).cacheControl( cc ).tag( etag ).build();
+		// NOTE:
+		// SHOULD THE LIST USE ETAG?
+		// IT'S GOOD IF LIST IS RARELY CHANGED.
+//		response = checkPrecondition( ifMatch, ifNoneMatch, contacts.getMD5(), false );
+//		if ( response != null ) {
+//			return response;
+//		}
+//		CacheControl cc = new CacheControl();
+//		cc.setMaxAge( -1 );
+//		EntityTag etag = new EntityTag( contacts.getMD5() );
+//		return Response.ok( contacts ).cacheControl( cc ).tag( etag ).build();
+		
+		return Response.ok( contacts ).build();
 
 	}
 
