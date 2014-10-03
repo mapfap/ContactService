@@ -188,6 +188,27 @@ public class ETagTest {
 		}
 	}
 	
+	// Even though it's make no sense to get with if-match
+	// But what if the client send this ?
+	@Test
+	public void testGetIfMatchSuccess() {
+		long id = postContact( contact1 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_MATCH , etag).method( HttpMethod.GET );
+			ContentResponse response2 = request2.send();
+			assertEquals( "Get with matching etag, should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
 	@Test
 	public void testGetIfNoneMatchFail() {
 		long id = postContact( contact1 );
