@@ -170,7 +170,7 @@ public class ETagTest {
 	}
 	
 	@Test
-	public void testIfNonMatch() {
+	public void testGetIfNoneMatchSuccess() {
 		long id = postContact( contact1 );
 		
 		try {
@@ -181,10 +181,114 @@ public class ETagTest {
 			
 			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , etag).method( HttpMethod.GET );
 			ContentResponse response2 = request2.send();
-			assertEquals( "Get the old one, should return NOT MODIFIED", Status.NOT_MODIFIED.getStatusCode(), response2.getStatus() );
+			assertEquals( "Get with matching etag, should return 304 NOT MODIFIED", Status.NOT_MODIFIED.getStatusCode(), response2.getStatus() );
 			
 		} catch ( Exception ex ) {
 			ex.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testGetIfNoneMatchFail() {
+		long id = postContact( contact1 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			contact1.setEmail("change@change.com");
+			String fakeETag = "\"" + contact1.getMD5() + "\"";
+			
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , fakeETag ).method( HttpMethod.GET );
+			ContentResponse response2 = request2.send();
+			assertEquals( "Get with NOT-matching etag, should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testPutIfMatchSuccess() {
+		long id = postContact( contact1 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+	
+			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
+			Request request2 = client.newRequest( uri + "contacts/" + id ).content( content, "application/xml" ).header( HttpHeader.IF_MATCH , etag).method( HttpMethod.PUT );
+			ContentResponse response2 = request2.send();
+			assertEquals( "PUT with matching ETAG, should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testPutIfMatchFail() {
+		long id = postContact( contact2 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			StringContentProvider content = new StringContentProvider( marshal( contact1 ) );	
+			String fakeETag = "\"" + contact3.getMD5() + "\"";
+			Request request2 = client.newRequest( uri + "contacts/" + id ).content( content, "application/xml" ).header( HttpHeader.IF_MATCH , fakeETag).method( HttpMethod.PUT );
+			ContentResponse response2 = request2.send();
+			assertEquals( "PUT with NOT-matching ETAG, should return 412 PRECONDITION FAILED", Status.PRECONDITION_FAILED.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDeleteIfMatchSuccess() {
+		long id = postContact( contact3 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_MATCH , etag).method( HttpMethod.DELETE );
+			ContentResponse response2 = request2.send();
+			assertEquals( "DELETE with matching ETAG, should return 200 OK", Status.OK.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDeleteIfMatchFail() {
+		long id = postContact( contact3 );
+		
+		try {
+			ContentResponse response = client.GET( uri + "contacts/" + id);
+			assertEquals( "Should return 200 OK", Status.OK.getStatusCode(), response.getStatus() );
+			String etag = response.getHeaders().get("ETag");
+			assertTrue("ETag must be existed", etag != null);
+			
+			String fakeETag = "\"" + contact2.getMD5() + "\"";
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_MATCH , fakeETag).method( HttpMethod.DELETE );
+			ContentResponse response2 = request2.send();
+			assertEquals( "DELETE with NOT-matching ETAG, should return 412 PRECONDITION FAILED", Status.PRECONDITION_FAILED.getStatusCode(), response2.getStatus() );
+			
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		}
+	}
+	
+	
 }
