@@ -123,6 +123,9 @@ public class ETagTest {
 		return -1;
 	}
 	
+	/**
+	 * Test that GET return ETag.
+	 */
 	@Test
 	public void testETagFromGet() {
 		long id = postContact( contact1 );
@@ -138,6 +141,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test that POST return Etag.
+	 */
 	@Test
 	public void testETagFromPost() {
 		try {
@@ -154,6 +160,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test that PUT return ETag.
+	 */
 	@Test
 	public void testETagFromPut() {
 		long id = postContact( contact2 );
@@ -174,6 +183,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test GET with If-None-Match and it's match.
+	 */
 	@Test
 	public void testGetIfNoneMatchSuccess() {
 		long id = postContact( contact1 );
@@ -184,7 +196,7 @@ public class ETagTest {
 			String etag = response.getHeaders().get("ETag");
 			assertTrue("ETag must be existed", etag != null);
 			
-			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , etag).method( HttpMethod.GET );
+			Request request2 = client.newRequest( uri + "contacts/" + id ).header( HttpHeader.IF_NONE_MATCH , etag ).method( HttpMethod.GET );
 			ContentResponse response2 = request2.send();
 			assertEquals( "Get with matching etag, should return 304 NOT MODIFIED", Status.NOT_MODIFIED.getStatusCode(), response2.getStatus() );
 			
@@ -195,6 +207,9 @@ public class ETagTest {
 	
 	// Even though it's make no sense to get with if-match
 	// But what if the client send this ?
+	/**
+	 * Test GET with If-Match and it's match.
+	 */
 	@Test
 	public void testGetIfMatchSuccess() {
 		long id = postContact( contact1 );
@@ -214,6 +229,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test GET with If-None-Match and it's not match.
+	 */
 	@Test
 	public void testGetIfNoneMatchFail() {
 		long id = postContact( contact1 );
@@ -235,6 +253,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test PUT with If-Match and It's match.
+	 */
 	@Test
 	public void testPutIfMatchSuccess() {
 		long id = postContact( contact1 );
@@ -255,6 +276,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test put with If-Match and it's not match.
+	 */
 	@Test
 	public void testPutIfMatchFail() {
 		long id = postContact( contact2 );
@@ -276,6 +300,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test delete with If-Match and it's match.
+	 */
 	@Test
 	public void testDeleteIfMatchSuccess() {
 		long id = postContact( contact3 );
@@ -295,6 +322,9 @@ public class ETagTest {
 		}
 	}
 	
+	/**
+	 * Test delete with If-Match and it's not match.
+	 */
 	@Test
 	public void testDeleteIfMatchFail() {
 		long id = postContact( contact3 );
