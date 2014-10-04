@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -87,7 +86,7 @@ public class ContactResource {
 	@GET 
 	@Path("/")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response listAllContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @QueryParam("title") String title, @Context Request request ) {
+	public Response listAllContact( @QueryParam("title") String title, @Context Request request ) {
 		List<Contact> tempContactList = null;
 
 		if ( title == null) {
@@ -114,7 +113,7 @@ public class ContactResource {
 	@GET 
 	@Path("{id}")
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response getContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, @Context Request request ) {
+	public Response getContact( @PathParam("id") long id, @Context Request request ) {
 		Response response = null;
 
 		response = checkIdNotFound( id );
@@ -176,7 +175,7 @@ public class ContactResource {
 	@Path("{id}")
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
-	public Response updateContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo, @Context Request request ) {
+	public Response updateContact( @PathParam("id") long id, JAXBElement<Contact> element, @Context UriInfo uriInfo, @Context Request request ) {
 		Response response = null;
 
 		response = checkIdNotFound( id );
@@ -216,7 +215,7 @@ public class ContactResource {
 	 */
 	@DELETE
 	@Path("{id}")
-	public Response deleteContact( @HeaderParam("If-Match") String ifMatch, @HeaderParam("If-None-Match") String ifNoneMatch, @PathParam("id") long id, @Context Request request ) {
+	public Response deleteContact( @PathParam("id") long id, @Context Request request ) {
 
 		Response response = null;
 		
