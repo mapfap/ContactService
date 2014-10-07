@@ -138,4 +138,16 @@ public class JpaContactDao implements ContactDao {
 		}
 	}
 
+	@Override
+	public List<Contact> findAll( long userId ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Contact> findByTitle( long userId, String title ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

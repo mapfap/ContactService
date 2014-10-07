@@ -33,7 +33,7 @@ public class ETagTest {
 	private static Contact contact1;
 	private static Contact contact2;
 	private static Contact contact3;
-	private ContactDao contactDao = DaoFactory.getInstance().getContactDao();
+	private ContactDao contactDao = ContactDaoFactory.getInstance().getContactDao();
 	private HttpClient client;
 
 	/**

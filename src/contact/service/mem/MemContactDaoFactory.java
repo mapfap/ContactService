@@ -10,7 +10,7 @@ import javax.xml.bind.Marshaller;
 
 import contact.entity.Contact;
 import contact.entity.Contacts;
-import contact.service.DaoFactory;
+import contact.service.ContactDaoFactory;
 
 /**
  * Manage instances of Memory-Based DAO used in the app.
@@ -18,7 +18,7 @@ import contact.service.DaoFactory;
  * 
  * @author mapfap - Sarun Wongtanakarn
  */
-public class MemDaoFactory extends DaoFactory {
+public class MemContactDaoFactory extends ContactDaoFactory {
 
 	public static final String EXTERNAL_FILE_PATH = "ContactsSevicePersistence.xml";
 	private MemContactDao daoInstance;
@@ -26,7 +26,7 @@ public class MemDaoFactory extends DaoFactory {
 	/**
 	 * Suppose to call only once by its abstract factory.
 	 */
-	public MemDaoFactory() {
+	public MemContactDaoFactory() {
 		initFileIfnotExisted();
 		daoInstance = new MemContactDao();
 	}

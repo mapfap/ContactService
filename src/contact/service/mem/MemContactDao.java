@@ -37,7 +37,7 @@ public class MemContactDao implements ContactDao {
 	public MemContactDao() {
 		nextId = new AtomicLong( 1000L );
 		contacts = new ConcurrentHashMap<Long, Contact>();
-		loadContacts();
+//		loadContacts();
 //		createTestContacts();
 	}
 	
@@ -45,7 +45,7 @@ public class MemContactDao implements ContactDao {
 		try {
 			Contacts importContacts = new Contacts();
 			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
-			File inputFile = new File( MemDaoFactory.EXTERNAL_FILE_PATH );
+			File inputFile = new File( MemContactDaoFactory.EXTERNAL_FILE_PATH );
 			Unmarshaller unmarshaller = context.createUnmarshaller();	
 			importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
 			if ( importContacts.getContacts() == null ) {
@@ -83,7 +83,7 @@ public class MemContactDao implements ContactDao {
 				matchContacts.add( contact );
 			}
 		}
-		return sortByContactId( matchContacts );
+		return matchContacts;
 	}
 
 	/**
@@ -158,6 +158,31 @@ public class MemContactDao implements ContactDao {
 		for ( Contact contact : findAll() ) {
 			delete( contact.getId() );
 		}
+	}
+
+	@Override
+	public List<Contact> findAll( long userId ) {
+		List<Contact> matchContacts = new ArrayList<Contact>();
+		for ( Contact contact : findAll() ) {
+			if ( contact.getOwnerId() == userId ) {
+				matchContacts.add( contact );
+			}
+		}
+		return matchContacts;
+	}
+
+	@Override
+	public List<Contact> findByTitle( long userId, String title ) {
+		title = title.toUpperCase();
+		List<Contact> matchContacts = new ArrayList<Contact>();
+		for ( Contact contact : findAll() ) {
+			if ( contact.getTitle() == null ) {
+				/* Do Nothing, There is no title.*/
+			} else if ( contact.getTitle().toUpperCase().contains( title ) && contact.getOwnerId() == userId ) {
+				matchContacts.add( contact );
+			}
+		}
+		return sortByContactId( matchContacts );
 	}
 
 }

@@ -22,14 +22,14 @@ public interface ContactDao {
 	 * Get the list of all contacts.
 	 * @return the list of all contacts.
 	 */
-	public List<Contact> findAll();
+	public List<Contact> findAll( long userId );
 	
 	/**
 	 * Find contact with matched substring of title.
 	 * @param title part of title of contact for finding.
 	 * @return list of contacts matched by title.
 	 */
-	public List<Contact> findByTitle( String title );
+	public List<Contact> findByTitle( long userId, String title );
 
 	/**
 	 * Delete the contact with matching ID.

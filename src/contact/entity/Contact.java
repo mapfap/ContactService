@@ -39,6 +39,9 @@ public class Contact extends MD5Digestable implements Serializable, Comparable<C
 	private String name;
 	private String email;
 	private String phoneNumber;
+	
+	// FOREIGN KEY
+	private long ownerId;
 
 	public Contact() {
 
@@ -112,6 +115,14 @@ public class Contact extends MD5Digestable implements Serializable, Comparable<C
 
 	public void setPhoneNumber( String phoneNumber ) {
 		this.phoneNumber = phoneNumber;
+	}
+	
+	public long getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(long ownerId) {
+		this.ownerId = ownerId;
 	}
 
 	@Override

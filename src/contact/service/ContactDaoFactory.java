@@ -1,6 +1,7 @@
 package contact.service;
 
 
+
 /**
  * DaoFactory defines methods for obtaining instance of data access objects.
  * To create DAO you first get an instance of a concrete factory by invoking
@@ -14,14 +15,14 @@ package contact.service;
  * 
  * @author jim, Sarun Wongtanakarn
  */
-public abstract class DaoFactory {
+public abstract class ContactDaoFactory {
 	// singleton instance of this factory
-	private static DaoFactory factory;
+	private static ContactDaoFactory factory;
 	
 	/** 
 	 * this class shouldn't be instantiated, but constructor must be visible to subclasses.
 	 */
-	protected DaoFactory() {
+	protected ContactDaoFactory() {
 		// nothing to do
 	}
 	
@@ -29,9 +30,9 @@ public abstract class DaoFactory {
 	 * Get a singleton instance of the DaoFactory.
 	 * @return instance of a concrete DaoFactory
 	 */
-	public static DaoFactory getInstance() {
+	public static ContactDaoFactory getInstance() {
 		if ( factory == null ) {
-			factory = new contact.service.mem.MemDaoFactory();
+			factory = new contact.service.mem.MemContactDaoFactory();
 			// factory = new contact.service.jpa.JpaDaoFactory();
 		}
 		return factory;
@@ -42,7 +43,7 @@ public abstract class DaoFactory {
 	 * So it's able to inject the preferred DaoFactory.
 	 * @param afactory a new factory to be used as concrete factory class.
 	 */
-	public static void setDaoFactory( DaoFactory afactory ) {
+	public static void setDaoFactory( ContactDaoFactory afactory ) {
 		factory = afactory;
 	}
 	
@@ -62,4 +63,5 @@ public abstract class DaoFactory {
 	 * application terminates.
 	 */
 	public abstract void shutdown();
+
 }

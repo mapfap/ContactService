@@ -8,7 +8,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import contact.service.ContactDao;
-import contact.service.DaoFactory;
+import contact.service.ContactDaoFactory;
 
 /**
  * Manage instances of DAO that use the Java Persistence API (JPA) used in the app.
@@ -16,7 +16,7 @@ import contact.service.DaoFactory;
  * 
  * @author mapfap - Sarun Wongtanakarn
  */
-public class JpaDaoFactory extends DaoFactory {
+public class JpaContactDaoFactory extends ContactDaoFactory {
 	
 	private static final String PERSISTENCE_UNIT = "contacts";
 	private ContactDao daoInstance;
@@ -25,13 +25,13 @@ public class JpaDaoFactory extends DaoFactory {
 	private static Logger logger;
 	
 	static {
-		logger = Logger.getLogger(JpaDaoFactory.class.getName());
+		logger = Logger.getLogger(JpaContactDaoFactory.class.getName());
 	}
 	
 	/**
 	 * Suppose to call only once by its abstract factory.
 	 */
-	public JpaDaoFactory() {
+	public JpaContactDaoFactory() {
 		emf = Persistence.createEntityManagerFactory( PERSISTENCE_UNIT );
 		em = emf.createEntityManager();
 		daoInstance = new JpaContactDao( em );

@@ -8,7 +8,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 
-import contact.service.mem.MemDaoFactory;
+import contact.service.mem.MemContactDaoFactory;
 
 /**
  * 
@@ -67,8 +67,11 @@ public class JettyMain {
 
 	}
 	
+	/**
+	 * Wait user for enter key and stop the server.
+	 */
 	public static void waitForExit() {
-		System.out.println("Server started.  Press ENTER to exit.");
+		System.out.println("Server started. ENTER KEY to exit.");
 		try {
 			System.in.read();
 			System.out.println("Stopping server.");
@@ -78,9 +81,12 @@ public class JettyMain {
 		}
 	}
 
+	/**
+	 * Stop the server.
+	 */
 	public static void stopServer() {
 		try {
-			MemDaoFactory.getInstance().shutdown();
+			MemContactDaoFactory.getInstance().shutdown();
 			server.stop();
 		} catch (Exception e) {
 			e.printStackTrace();
