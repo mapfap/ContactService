@@ -73,6 +73,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#findByTitle(String)
 	 */
+	@Override
 	public List<Contact> findByTitle( String title ) {
 		title = title.toUpperCase();
 		List<Contact> matchContacts = new ArrayList<Contact>();
@@ -83,12 +84,13 @@ public class MemContactDao implements ContactDao {
 				matchContacts.add( contact );
 			}
 		}
-		return sortByContactId( matchContacts );
+		return matchContacts;
 	}
 
 	/**
 	 * @see ContactDao#find(long)
 	 */
+	@Override
 	public Contact find( long id ) {
 		return contacts.get( id );
 	}
@@ -96,6 +98,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#findAll()
 	 */
+	@Override
 	public List<Contact> findAll() {
 		List<Contact> list = new ArrayList<Contact>( contacts.values() );
 		return sortByContactId( list );
@@ -104,6 +107,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#delete(long)
 	 */
+	@Override
 	public boolean delete( long id ) {
 		contacts.remove( id );
 		return true;
@@ -112,6 +116,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#save(Contact)
 	 */
+	@Override
 	public boolean save( Contact contact ) {
 		if ( contact.getId() == 0 ) {
 			contact.setId( getUniqueId() );
@@ -123,6 +128,7 @@ public class MemContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#update(Contact)
 	 */
+	@Override
 	public boolean update( Contact contact ) {
 		if ( ! contacts.containsKey( contact.getId() ) ) {
 			return false;

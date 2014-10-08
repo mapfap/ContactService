@@ -31,7 +31,19 @@ public abstract class DaoFactory {
 	 */
 	public static DaoFactory getInstance() {
 		if ( factory == null ) {
-			factory = new contact.service.mem.MemDaoFactory();
+			String factoryclass = System.getProperty("contact.daofactory");
+			if ( factoryclass != null ) {
+				ClassLoader loader = DaoFactory.class.getClassLoader();
+				try {
+					factory = (DaoFactory) loader.loadClass( factoryclass ).newInstance();
+					return factory;
+				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			// No properties assigned...
+			 factory = new contact.service.mem.MemDaoFactory();
 			// factory = new contact.service.jpa.JpaDaoFactory();
 		}
 		return factory;

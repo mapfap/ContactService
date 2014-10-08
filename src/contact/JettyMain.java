@@ -67,6 +67,9 @@ public class JettyMain {
 
 	}
 	
+	/**
+	 * Wait key input from user to exit.
+	 */
 	public static void waitForExit() {
 		System.out.println("Server started.  Press ENTER to exit.");
 		try {
@@ -78,6 +81,9 @@ public class JettyMain {
 		}
 	}
 
+	/**
+	 * Stop the server.
+	 */
 	public static void stopServer() {
 		try {
 			MemDaoFactory.getInstance().shutdown();

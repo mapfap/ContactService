@@ -43,9 +43,12 @@ public class MemDaoFactory extends DaoFactory {
 	public void shutdown() {
 		List<Contact> contacts = daoInstance.findAll();
 		writeContactListToFile( contacts );
-		
 	}
 	
+	/**
+	 * Write the list of contact to file.
+	 * @param contacts list to be written.
+	 */
 	public void writeContactListToFile( List<Contact> contacts ) {
 		Contacts exportContacts = new Contacts();
 		exportContacts.setContacts( contacts );
@@ -59,6 +62,9 @@ public class MemDaoFactory extends DaoFactory {
 		}
 	}
 
+	/**
+	 * Initialize the file if it doesn't exist.
+	 */
 	private void initFileIfnotExisted() {
 		File file = new File( EXTERNAL_FILE_PATH );
 		if ( ! file.exists() ) {

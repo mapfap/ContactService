@@ -36,6 +36,7 @@ public class JpaContactDao implements ContactDao {
 	 * @see ContactDao#findByTitle(String)
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public List<Contact> findByTitle( String title ) {
 		Query query = em.createQuery("SELECT c FROM Contact c WHERE LOWER(c.title) LIKE :title");
 		query.setParameter( "title", "%" + title.toLowerCase() + "%" );
@@ -46,6 +47,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#find(long)
 	 */
+	@Override
 	public Contact find( long id ) {
 		return em.find(Contact.class, id);
 	}
@@ -53,6 +55,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#findAll()
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<Contact> findAll() {
 		Query query = em.createQuery("SELECT c FROM Contact c");
@@ -63,6 +66,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#delete(long)
 	 */
+	@Override
 	public boolean delete( long id ) {
 		EntityTransaction tx = em.getTransaction();
 		Contact contact = find( id );
@@ -79,6 +83,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#save(Contact)
 	 */
+	@Override
 	public boolean save( Contact contact ) {
 		if ( contact == null ) {
 			throw new IllegalArgumentException("Can't save a null contact");
@@ -98,6 +103,7 @@ public class JpaContactDao implements ContactDao {
 	/**
 	 * @see ContactDao#update(Contact)
 	 */
+	@Override
 	public boolean update( Contact contact ) {
 		EntityTransaction tx = em.getTransaction();
 		try {
