@@ -105,12 +105,17 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean update( Contact contact ) {
+		Contact oldContact = find( contact.getId() );
+		if ( oldContact == null ) {
+			return false;
+		}
+		
 		EntityTransaction tx = em.getTransaction();
 		try {
 			tx.begin();
 			em.find( Contact.class, contact.getId() );
 			em.merge( contact );
-			tx.commit();
+			tx.commit();	
 			return true;
 		} catch ( EntityExistsException ex ) {
 			handleDatabaseError( tx, ex );
